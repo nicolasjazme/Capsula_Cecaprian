@@ -67,7 +67,7 @@
     function verificarSesion() {
       const sesionGuardada = localStorage.getItem('sesion');
       if (!sesionGuardada) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return false;
       }
       
@@ -80,7 +80,7 @@
         }
         return true;
       } catch (e) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return false;
       }
     }
@@ -89,7 +89,7 @@
     function cerrarSesion() {
       if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
         localStorage.removeItem('sesion');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
       }
     }
 

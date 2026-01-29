@@ -679,19 +679,19 @@
     function verificarSesion() {
       const sesionGuardada = localStorage.getItem('sesion');
       if (!sesionGuardada) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return false;
       }
       
       try {
         const sesion = JSON.parse(sesionGuardada);
         if (sesion.tipo !== 'usuario' && sesion.tipo !== 'admin') {
-          window.location.href = 'login.html';
+          window.location.href = 'index.html';
           return false;
         }
         return true;
       } catch (e) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return false;
       }
     }
@@ -709,10 +709,10 @@
             return false;
           }
         } catch (e) {
-          window.location.href = 'login.html';
+          window.location.href = 'index.html';
         }
       } else {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
       }
     }
 
@@ -720,7 +720,7 @@
     function cerrarSesion() {
       if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
         localStorage.removeItem('sesion');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
       }
     }
 
