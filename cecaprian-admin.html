@@ -1748,5 +1748,34 @@
 
     cargarUsuarios();
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://ovzogjfodcbhhpaduhsx.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_KO3_49qLCvGfO9uaTsnu4w_zQToP2Mh';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const formSupabase = document.getElementById('formUsuario');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+
+    const username = document.getElementById('nuevoUsername').value;
+    const password = document.getElementById('nuevoPassword').value;
+
+    // Enviar a la base de datos real
+    const { data, error } = await supabase
+      .from('usuarios') 
+      .insert([{ nombre: username, password: password }]);
+
+    if (error) {
+      alert('Error al guardar: ' + error.message);
+    } else {
+      alert('¡Usuario "' + username + '" guardado en la nube!');
+      form.reset(); // Limpia los cuadritos del formulario
+      // Aquí podrías llamar a una función para actualizar la tabla visualmente
+    }
+  });
+</script>
 </body>
 </html>
