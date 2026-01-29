@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cápsulas - Cecaprian ONLINE</title>
+  <!-- Google Fonts y Font Awesome para íconos -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="alumno.css">
+</head>
+<body>
+  <header>
+    <div class="nav-bar">
+      <div class="logo-title">
+        <img src="Fotos/Logo 1.png" alt="Logo Cecaprian" />
+        <h1>Centro de Capacitación Bancaria Cecaprian</h1>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="CECAPRIAN.html">Inicio</a></li>
+          <li class="active"><a href="#">Cápsulas</a></li>
+          <li><a href="#" onclick="cerrarSesion(); return false;" style="color: #ffcccc;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="subheader">Cápsulas de video educativas</div>
+  </header>
+
+  <!-- Listado de cápsulas para alumnos -->
+  <section>
+    <h2><i class="fas fa-video"></i> Cápsulas disponibles</h2>
+    <div id="listaCapsulas">
+      <!-- Aquí se agregan las cápsulas con JS -->
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="rrss">
+      <a href="https://facebook.com/cecaprian" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/cecaprian/#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/message/OGJQJHWXCOODJ1" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian · Portal de Cápsulas</span>
+  </footer>
+
+  <script>
+    // Verificar sesión de usuario
+    function verificarSesion() {
+      const sesionGuardada = localStorage.getItem('sesion');
+      if (!sesionGuardada) {
+        window.location.href = 'login.html';
+        return false;
+      }
+      
+      try {
+        const sesion = JSON.parse(sesionGuardada);
+        if (sesion.tipo === 'admin') {
+          window.location.href = 'cecaprian-admin.html';
+          return false;
+        }
+        return true;
+      } catch (e) {
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
+
+    // Cerrar sesión
+    function cerrarSesion() {
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        localStorage.removeItem('sesion');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Verificar sesión al cargar la página
+    if (!verificarSesion()) {
+      // La redirección ya se hizo en verificarSesion
+    }
+
+    const lista = document.getElementById('listaCapsulas');
+
+    // Cargar cápsulas guardadas al iniciar
+    function cargarCapsulas() {
+      try {
+        const capsulasGuardadas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        
+        lista.innerHTML = '';
+
+        if (capsulasGuardadas.length === 0) {
+          lista.innerHTML = '<p style="text-align: center; color: #7a9bc4; padding: 20px;">No hay cápsulas disponibles.</p>';
+          return;
+        }
+
+        // Agrupar cápsulas por carpeta
+        const capsulasPorCarpeta = {};
+
+        carpetas.forEach(carpeta => {
+          capsulasPorCarpeta[carpeta.id] = { carpeta, capsulas: [] };
+        });
+
+        // Cápsulas sin carpeta asignada
+        capsulasPorCarpeta['sin-carpeta'] = { carpeta: { id: 'sin-carpeta', nombre: 'Sin categoría' }, capsulas: [] };
+
+        capsulasGuardadas.forEach(capsula => {
+          const url = capsula.videoUrl || capsula.videoData;
+          if (capsula.titulo && url) {
+            if (!capsula.id) {
+              capsula.id = capsula.fecha || Date.now().toString();
+            }
+
+            const carpetaId = capsula.carpetaId || 'sin-carpeta';
+            if (capsulasPorCarpeta[carpetaId]) {
+              capsulasPorCarpeta[carpetaId].capsulas.push(capsula);
+            } else {
+              capsulasPorCarpeta['sin-carpeta'].capsulas.push(capsula);
+            }
+          }
+        });
+
+        // Mostrar carpetas con sus cápsulas
+        carpetas.forEach(carpeta => {
+          if (capsulasPorCarpeta[carpeta.id] && capsulasPorCarpeta[carpeta.id].capsulas.length > 0) {
+            mostrarCarpetaConCapsulas(carpeta, capsulasPorCarpeta[carpeta.id].capsulas);
+          }
+        });
+
+        // Mostrar cápsulas sin carpeta si las hay
+        if (capsulasPorCarpeta['sin-carpeta'].capsulas.length > 0) {
+          mostrarCarpetaConCapsulas(capsulasPorCarpeta['sin-carpeta'].carpeta, capsulasPorCarpeta['sin-carpeta'].capsulas);
+        }
+
+      } catch (error) {
+        console.error('Error al cargar cápsulas:', error);
+      }
+    }
+
+    // Mostrar carpeta con sus cápsulas
+    function mostrarCarpetaConCapsulas(carpeta, capsulas) {
+      const seccionCarpeta = document.createElement('div');
+      seccionCarpeta.className = 'seccion-carpeta';
+      seccionCarpeta.innerHTML = `
+        <div class="encabezado-carpeta">
+          <h3><i class="fas fa-folder-open"></i> ${carpeta.nombre}</h3>
+          <span class="contador-capsulas">${capsulas.length} cápsula${capsulas.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="contenedor-capsulas-carpeta"></div>
+      `;
+
+      const contenedorCapsulas = seccionCarpeta.querySelector('.contenedor-capsulas-carpeta');
+      capsulas.forEach(capsula => {
+        mostrarCapsula(capsula, contenedorCapsulas);
+      });
+
+      lista.appendChild(seccionCarpeta);
+    }
+
+    // Convertir URL de YouTube a formato embebido
+    function convertirYouTubeUrl(url) {
+      if (!url) return null;
+      
+      let videoId = null;
+      url = url.trim();
+      
+      const youtuBeMatch = url.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (youtuBeMatch && youtuBeMatch[1]) {
+        videoId = youtuBeMatch[1];
+      }
+      else {
+        const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+        if (watchMatch && watchMatch[1]) {
+          videoId = watchMatch[1];
+        }
+        else {
+          const embedMatch = url.match(/(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+          if (embedMatch && embedMatch[1]) {
+            videoId = embedMatch[1];
+          }
+          else {
+            const vMatch = url.match(/(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/);
+            if (vMatch && vMatch[1]) {
+              videoId = vMatch[1];
+            }
+            else {
+              const paramMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+              if (paramMatch && paramMatch[1]) {
+                videoId = paramMatch[1];
+              }
+            }
+          }
+        }
+      }
+      
+      if (videoId && videoId.length === 11) {
+        return `https://www.youtube.com/embed/${videoId}?hd=1&vq=hd1080&rel=0&modestbranding=1`;
+      }
+      
+      return null;
+    }
+
+    // Convertir URL de Vimeo a formato embebido
+    function convertirVimeoUrl(url) {
+      const regExp = /(?:vimeo)\.com.*(?:videos|video|channels|)\/([\d]+)/i;
+      const match = url.match(regExp);
+      return match ? `https://player.vimeo.com/video/${match[1]}?quality=1080p&autopause=0` : null;
+    }
+
+    // Convertir URL de Google Drive a formato embebido
+    function convertirGoogleDriveUrl(url) {
+      if (!url) return null;
+      
+      let fileId = null;
+      const filePattern1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (filePattern1 && filePattern1[1]) {
+        fileId = filePattern1[1];
+      }
+      else {
+        const filePattern2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (filePattern2 && filePattern2[1]) {
+          fileId = filePattern2[1];
+        }
+      }
+      
+      if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+      
+      return null;
+    }
+
+    // Obtener thumbnail de YouTube
+    function obtenerYouTubeThumbnail(videoId) {
+      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+
+    // Mostrar una cápsula en miniatura
+    function mostrarCapsula(capsula, contenedor = null) {
+      const div = document.createElement('div');
+      div.className = 'capsula';
+      
+      const url = capsula.videoData || capsula.videoUrl;
+      const capsulaId = capsula.id || capsula.fecha || Date.now().toString();
+      
+      let miniaturaHtml = '';
+      let videoEmbedUrl = '';
+      
+      const tituloEscapado = (capsula.titulo || 'Sin título').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const descripcionEscapada = (capsula.descripcion || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      
+      const youtubeEmbed = convertirYouTubeUrl(url);
+      if (youtubeEmbed) {
+        const videoIdMatch = youtubeEmbed.match(/embed\/([a-zA-Z0-9_-]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        if (videoId) {
+          videoEmbedUrl = youtubeEmbed;
+          miniaturaHtml = `<img src="${obtenerYouTubeThumbnail(videoId)}" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'">`;
+        }
+      }
+      else if (convertirVimeoUrl(url)) {
+        const vimeoEmbed = convertirVimeoUrl(url);
+        videoEmbedUrl = vimeoEmbed;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;"><i class="fab fa-vimeo"></i></div>`;
+      }
+      else if (convertirGoogleDriveUrl(url)) {
+        const driveEmbed = convertirGoogleDriveUrl(url);
+        videoEmbedUrl = driveEmbed;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;"><i class="fab fa-google-drive"></i></div>`;
+      }
+      else {
+        videoEmbedUrl = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;"><i class="fas fa-video"></i></div>`;
+      }
+      
+      div.innerHTML = `
+        <div class="capsula-miniatura" onclick="verVideoCompleto('${capsulaId}', '${videoEmbedUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${tituloEscapado}', '${descripcionEscapada}')">
+          ${miniaturaHtml}
+          <div class="play-overlay">
+            <i class="fas fa-play"></i>
+          </div>
+        </div>
+        <div class="capsula-info">
+          <h3>${capsula.titulo || 'Sin título'}</h3>
+          <p>${capsula.descripcion || ''}</p>
+        </div>
+      `;
+      div.setAttribute('data-capsula-id', capsulaId);
+      
+      if (contenedor) {
+        contenedor.appendChild(div);
+      } else {
+        lista.prepend(div);
+      }
+    }
+
+    cargarCapsulas();
+
+    // Modal para ver video completo
+    function verVideoCompleto(capsulaId, videoUrl, titulo, descripcion) {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+      modal.onclick = function(e) {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      };
+
+      let videoHtml = '';
+      if (videoUrl.includes('youtube.com/embed')) {
+        videoHtml = `<iframe width="100%" height="500" src="${videoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else if (videoUrl.includes('vimeo.com')) {
+        videoHtml = `<iframe width="100%" height="500" src="${videoUrl}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else if (videoUrl.includes('drive.google.com')) {
+        videoHtml = `<iframe width="100%" height="500" src="${videoUrl}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else {
+        videoHtml = `<video src="${videoUrl}" controls autoplay style="width: 100%; max-height: 500px; border-radius: 8px;"></video>`;
+      }
+
+      modal.innerHTML = `
+        <div style="background: #fff; border-radius: 12px; padding: 20px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+          <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; z-index: 10;">
+            <i class="fas fa-times"></i>
+          </button>
+          <h2 style="margin: 0 0 10px 0; color: #1a5796; font-size: 1.5em;">${titulo}</h2>
+          <p style="margin: 0 0 15px 0; color: #2a4276;">${descripcion || ''}</p>
+          ${videoHtml}
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+  </script>
+</body>
+</html>

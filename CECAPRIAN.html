@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cecaprian ONLINE</title>
+  <!-- Google Fonts y Font Awesome para íconos -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="alumno.css">
+</head>
+<body>
+  <header>
+    <div class="nav-bar">
+      <div class="logo-title">
+        <img src="Fotos/Logo 1.png" alt="Logo Cecaprian" />
+        <h1>Centro de Capacitación Bancaria Cecaprian</h1>
+      </div>
+      <nav>
+        <ul>
+          <li class="active"><a href="#">Inicio</a></li>
+          <li><a href="capsulas-alumno.html">Cápsulas</a></li>
+          <li><a href="#" onclick="cerrarSesion(); return false;" style="color: #ffcccc;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="subheader">Portal de cápsulas de video y evaluaciones para estudiantes.</div>
+  </header>
+
+
+
+  <!-- Sección Inicio con Evaluaciones y Documentos -->
+  <section>
+    <h2><i class="fas fa-home"></i> Inicio</h2>
+    
+    <!-- Evaluaciones -->
+    <div style="margin-top: 30px;">
+      <h3 style="color: #1a5796; font-size: 1.3em; margin-top: 0; border-bottom: 2px solid #e0efff; padding-bottom: 10px;">
+        <i class="fas fa-clipboard-list"></i> Evaluaciones
+      </h3>
+      <div id="listaEvaluaciones">
+        <!-- Aquí se cargan las evaluaciones con JS -->
+      </div>
+    </div>
+
+    <!-- Documentos -->
+    <div style="margin-top: 40px;">
+      <h3 style="color: #1a5796; font-size: 1.3em; margin-top: 0; border-bottom: 2px solid #e0efff; padding-bottom: 10px;">
+        <i class="fas fa-file-pdf"></i> Documentos
+      </h3>
+      <div id="listaDocumentos">
+        <!-- Aquí se cargan los documentos con JS -->
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="rrss">
+      <a href="https://facebook.com/cecaprian" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/cecaprian/#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/message/OGJQJHWXCOODJ1" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian· Inspirado en <a href="https://www.cecaprian.com" target="_blank" style="color:#fff; text-decoration:underline;">cecaprian.com</a></span>
+  </footer>
+
+  <script>
+    // Verificar sesión de usuario
+    function verificarSesion() {
+      const sesionGuardada = localStorage.getItem('sesion');
+      if (!sesionGuardada) {
+        window.location.href = 'login.html';
+        return false;
+      }
+      
+      try {
+        const sesion = JSON.parse(sesionGuardada);
+        if (sesion.tipo === 'admin') {
+          // Si es admin, redirigir al panel administrativo
+          window.location.href = 'cecaprian-admin.html';
+          return false;
+        }
+        return true;
+      } catch (e) {
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
+
+    // Cerrar sesión
+    function cerrarSesion() {
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        localStorage.removeItem('sesion');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Verificar sesión al cargar la página
+    if (!verificarSesion()) {
+      // La redirección ya se hizo en verificarSesion
+    }
+
+    const lista = document.getElementById('listaCapsulas');
+    const listaEvaluaciones = document.getElementById('listaEvaluaciones');
+    const listaDocumentos = document.getElementById('listaDocumentos');
+
+    function cargarEvaluacionesDisponibles() {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      
+      listaEvaluaciones.innerHTML = '';
+
+      if (evaluaciones.length === 0) {
+        listaEvaluaciones.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: #7a9bc4;">
+            <i class="fas fa-clipboard-list" style="font-size: 3em; color: #b6d6f6; margin-bottom: 15px; display: block;"></i>
+            <p>No hay evaluaciones disponibles en este momento.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Calcular estadísticas generales
+      let evaluacionesCompletadas = 0;
+      let promedioGeneral = 0;
+      let totalAciertos = 0;
+      let totalPreguntas = 0;
+
+      evaluaciones.forEach((eval) => {
+        const intentosEval = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.usuario && r.evaluacionId === eval.id);
+        if (intentosEval.length > 0) {
+          evaluacionesCompletadas++;
+          intentosEval.forEach(intento => {
+            totalAciertos += intento.aciertos;
+            totalPreguntas += intento.total;
+          });
+        }
+      });
+
+      if (totalPreguntas > 0) {
+        promedioGeneral = Math.round((totalAciertos / totalPreguntas) * 100);
+      }
+
+      // Mostrar resumen de progreso
+      const resumenDiv = document.createElement('div');
+      resumenDiv.style.cssText = 'background: linear-gradient(135deg, #e0efff 0%, #f2f8fc 100%); border-left: 4px solid #1a5796; padding: 20px; border-radius: 8px; margin-bottom: 25px;';
+      resumenDiv.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+          <div style="text-align: center;">
+            <div style="font-size: 2em; font-weight: 700; color: #1a5796;">${evaluacionesCompletadas}/${evaluaciones.length}</div>
+            <div style="color: #7a9bc4; font-size: 0.9em;">Evaluaciones completadas</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 2em; font-weight: 700; color: #1a5796;">${promedioGeneral}%</div>
+            <div style="color: #7a9bc4; font-size: 0.9em;">Promedio general</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 2em; font-weight: 700; color: #1a5796;">${totalAciertos}/${totalPreguntas}</div>
+            <div style="color: #7a9bc4; font-size: 0.9em;">Total de aciertos</div>
+          </div>
+        </div>
+      `;
+      listaEvaluaciones.appendChild(resumenDiv);
+
+      const tabla = document.createElement('table');
+      tabla.className = 'tabla-evaluaciones';
+      tabla.style.cssText = 'width: 100%; margin-top: 20px;';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Evaluación</th>
+          <th>Preguntas</th>
+          <th>Intentos</th>
+          <th>Mejor Calificación</th>
+          <th style="text-align: center;">Acción</th>
+        </tr>
+      `;
+      tabla.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      evaluaciones.forEach((eval, index) => {
+        const tr = document.createElement('tr');
+        const intentosEval = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.usuario && r.evaluacionId === eval.id);
+        const intentosRestantes = Math.max(0, 3 - intentosEval.length);
+        const mejorCalificacion = intentosEval.length > 0 ? Math.max(...intentosEval.map(i => i.porcentaje)) : 'N/A';
+        const puedeResponder = intentosRestantes > 0;
+        const colorFondo = mejorCalificacion >= 80 ? '#d4edda' : (mejorCalificacion === 'N/A' ? '#f8f9fa' : '#fff3cd');
+        const colorBorde = mejorCalificacion >= 80 ? '#28a745' : (mejorCalificacion === 'N/A' ? '#dee2e6' : '#ffc107');
+
+        tr.style.cssText = `background-color: ${colorFondo}; border-left: 3px solid ${colorBorde};`;
+        
+        tr.innerHTML = `
+          <td>
+            <div class="eval-titulo">${eval.titulo}</div>
+            <div style="color: #7a9bc4; font-size: 0.9em;">${eval.descripcion || ''}</div>
+          </td>
+          <td>
+            <div class="eval-preguntas">${eval.preguntas.length} preguntas</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: #1a5796;">
+              ${intentosEval.length}/3
+              <div style="font-size: 0.85em; color: #7a9bc4; font-weight: normal;">
+                ${intentosRestantes > 0 ? `${intentosRestantes} restante${intentosRestantes !== 1 ? 's' : ''}` : 'Sin intentos'}
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: ${mejorCalificacion >= 80 ? '#28a745' : (mejorCalificacion === 'N/A' ? '#999' : '#ff9800')};">
+              ${mejorCalificacion !== 'N/A' ? mejorCalificacion + '%' : '—'}
+              <div style="font-size: 0.85em; color: #7a9bc4; font-weight: normal;">
+                ${mejorCalificacion >= 80 ? '✅ Aprobado' : (mejorCalificacion === 'N/A' ? 'Sin intentar' : '❌ Por mejorar')}
+              </div>
+            </div>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn-accion btn-editar" onclick="iniciarEvaluacion(${index})" title="Responder evaluación" ${!puedeResponder ? 'disabled' : ''} style="${!puedeResponder ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+              <i class="fas fa-pencil-alt"></i> Responder
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tabla.appendChild(tbody);
+      listaEvaluaciones.appendChild(tabla);
+    }
+
+    function iniciarEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+      const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+      
+      // Contar intentos
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      const intentosUsuario = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.usuario && r.evaluacionId === eval.id);
+      
+      if (intentosUsuario.length >= 3) {
+        alert('Has alcanzado el máximo de 3 intentos en esta evaluación.');
+        return;
+      }
+
+      // Crear modal
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modal-evaluacion';
+      
+      const preguntasHtml = eval.preguntas.map((preg, idx) => `
+        <div style="background: #f2f8fc; border-left: 4px solid #1a5796; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+          <p style="margin: 0 0 10px 0; font-weight: 600; color: #1a5796;"><strong>Pregunta ${idx + 1} de ${eval.preguntas.length}:</strong> ${preg.pregunta}</p>
+          <div style="margin-left: 10px;">
+            ${preg.opciones.map((opcion, optIdx) => `
+              <label style="display: block; padding: 8px 10px; margin-bottom: 8px; border-radius: 4px; cursor: pointer; background: #fff; border: 1px solid #b6d6f6; transition: background 0.2s;">
+                <input type="radio" name="respuesta-${idx}" value="${opcion}" style="margin-right: 8px;">
+                <span>${opcion}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      modal.innerHTML = `
+        <div class="modal-contenido" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+          <button type="button" class="modal-close" onclick="document.getElementById('modal-evaluacion').remove()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h3 class="modal-titulo">
+            <i class="fas fa-pencil-alt"></i> ${eval.titulo}
+          </h3>
+          <p style="color: #7a9bc4; font-size: 0.9em; margin: 0 0 15px 0;">${eval.descripcion || ''}</p>
+          <p style="color: #999; font-size: 0.85em; margin: 0 0 15px 0;">Intento ${intentosUsuario.length + 1} de 3</p>
+          
+          <div id="preguntasContainer">
+            ${preguntasHtml}
+          </div>
+
+          <div class="modal-botones">
+            <button type="button" class="btn-cancelar" onclick="document.getElementById('modal-evaluacion').remove()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-guardar" onclick="enviarEvaluacion(${index})">
+              <i class="fas fa-check"></i> Enviar Respuestas
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function enviarEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+      const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+
+      let aciertos = 0;
+      let total = eval.preguntas.length;
+
+      // Verificar respuestas
+      eval.preguntas.forEach((preg, idx) => {
+        const respuestaSeleccionada = document.querySelector(`input[name="respuesta-${idx}"]:checked`);
+        if (!respuestaSeleccionada) {
+          alert('Por favor responde todas las preguntas');
+          return;
+        }
+        if (respuestaSeleccionada.value === preg.respuestaCorrecta) {
+          aciertos++;
+        }
+      });
+
+      // Guardar respuestas
+      const respuesta = {
+        usuarioId: sesion.usuario,
+        evaluacionId: eval.id,
+        aciertos: aciertos,
+        total: total,
+        porcentaje: Math.round((aciertos / total) * 100),
+        fecha: new Date().toISOString()
+      };
+
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      respuestasEvaluaciones.push(respuesta);
+      localStorage.setItem('respuestasEvaluaciones', JSON.stringify(respuestasEvaluaciones));
+
+      document.getElementById('modal-evaluacion').remove();
+      
+      const aprobado = respuesta.porcentaje >= 80;
+      const mensaje = aprobado ? 
+        `¡Excelente! Obtuviste ${aciertos}/${total} (${respuesta.porcentaje}%). ¡Aprobado!` :
+        `Obtuviste ${aciertos}/${total} (${respuesta.porcentaje}%). Necesitas 80% para aprobar.`;
+      
+      alert(mensaje);
+      cargarEvaluacionesDisponibles();
+    }
+
+    // ========== MOSTRAR DOCUMENTOS DISPONIBLES ==========
+
+    function cargarDocumentosDisponibles() {
+      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+      listaDocumentos.innerHTML = '';
+
+      if (documentos.length === 0) {
+        listaDocumentos.innerHTML = `
+          <div style="text-align: center; padding: 30px; color: #7a9bc4;">
+            <i class="fas fa-file-pdf" style="font-size: 2.5em; margin-bottom: 15px; color: #b6d6f6; display: block;"></i>
+            <p>No hay documentos disponibles en este momento.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tabla = document.createElement('table');
+      tabla.className = 'tabla-usuarios';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Nombre del Documento</th>
+          <th>Tamaño</th>
+          <th style="text-align: center;">Acción</th>
+        </tr>
+      `;
+      tabla.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      documentos.forEach((doc, index) => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-file-pdf" style="color: #dc3545; font-size: 1.2em;"></i>
+              <span>${doc.nombre}</span>
+            </div>
+          </td>
+          <td>${doc.tamanio}</td>
+          <td style="text-align: center;">
+            <button class="btn-accion btn-descargar" onclick="descargarDocumento(${index})" title="Descargar">
+              <i class="fas fa-download"></i> Descargar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tabla.appendChild(tbody);
+      listaDocumentos.appendChild(tabla);
+    }
+
+    function descargarDocumento(index) {
+      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+      const doc = documentos[index];
+
+      if (!doc) return;
+
+      try {
+        const link = document.createElement('a');
+        link.href = doc.contenido;
+        link.download = doc.nombre + '.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error al descargar documento:', error);
+        alert('Error al descargar el documento.');
+      }
+    }
+
+    cargarEvaluacionesDisponibles();
+    cargarDocumentosDisponibles();
+
+  </script>
+</body>
+</html>
+

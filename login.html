@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Cecaprian ONLINE</title>
+  <!-- Google Fonts y Font Awesome para íconos -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo-section">
+      <img src="Fotos/Logo 1.png" alt="Logo Cecaprian" />
+      <h1>Cecaprian Capsulas</h1>
+      <p>Portal de cápsulas de video</p>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="tipoUsuario">Tipo de usuario:</label>
+        <select id="tipoUsuario" required>
+          <option value="">Selecciona un tipo</option>
+          <option value="admin">Administrador</option>
+          <option value="usuario">Usuario</option>
+        </select>
+      </div>
+
+      <!-- Campo de nombre de usuario, solo visible para usuarios -->
+      
+      <div class="form-group" id="usernameGroup" style="display: none;">
+        <label for="username">Nombre de usuario:</label>
+        <input type="text" id="username" placeholder="Ingresa tu nombre de usuario" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" placeholder="Ingresa tu contraseña" required />
+      </div>
+
+      <button type="submit" class="btn-login">
+        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+      </button>
+    </form>
+
+    <div class="info-box">
+      <strong>Credenciales:</strong><br>
+      <span class="credenciales-admin"><strong>Administrador:</strong> admin / admin123<br></span>
+      <strong>Usuario:</strong> Usa el nombre de usuario y contraseña asignados por el administrador
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorMessage = document.getElementById('errorMessage');
+    const tipoUsuarioSelect = document.getElementById('tipoUsuario');
+    const usernameGroup = document.getElementById('usernameGroup');
+    const usernameInput = document.getElementById('username');
+
+    // Contraseña del administrador (fija)
+    const adminPassword = 'admin123';
+
+    // Mostrar/ocultar campo de nombre de usuario
+    tipoUsuarioSelect.addEventListener('change', function() {
+      if (this.value === 'usuario') {
+        usernameGroup.style.display = 'block';
+        usernameInput.required = true;
+      } else {
+        usernameGroup.style.display = 'none';
+        usernameInput.required = false;
+        usernameInput.value = '';
+      }
+    });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const tipoUsuario = tipoUsuarioSelect.value;
+      const username = usernameInput.value.trim();
+      const password = document.getElementById('password').value;
+
+      // Validar campos
+      if (!tipoUsuario || !password) {
+        mostrarError('Por favor completa todos los campos');
+        return;
+      }
+
+      if (tipoUsuario === 'admin') {
+        // Validar admin
+        if (password === adminPassword) {
+          const sesion = {
+            tipo: 'admin',
+            fecha: new Date().toISOString()
+          };
+          localStorage.setItem('sesion', JSON.stringify(sesion));
+          window.location.href = 'cecaprian-admin.html';
+        } else {
+          mostrarError('Contraseña de administrador incorrecta.');
+        }
+      } else if (tipoUsuario === 'usuario') {
+        // Validar usuario creado
+        if (!username) {
+          mostrarError('Por favor ingresa tu nombre de usuario');
+          return;
+        }
+
+        const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+        const usuario = usuarios.find(u => u.username === username && u.password === password);
+
+        if (usuario) {
+          const sesion = {
+            tipo: 'usuario',
+            username: username,
+            fecha: new Date().toISOString()
+          };
+          localStorage.setItem('sesion', JSON.stringify(sesion));
+          window.location.href = 'CECAPRIAN.html';
+        } else {
+          mostrarError('Nombre de usuario o contraseña incorrectos.');
+        }
+      }
+    });
+
+    function mostrarError(mensaje) {
+      errorMessage.textContent = mensaje;
+      errorMessage.style.display = 'block';
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+    }
+
+    // Verificar si ya hay una sesión activa
+    const sesionGuardada = localStorage.getItem('sesion');
+    if (sesionGuardada) {
+      try {
+        const sesion = JSON.parse(sesionGuardada);
+        // Redirigir automáticamente si hay sesión
+        if (sesion.tipo === 'admin') {
+          window.location.href = 'cecaprian-admin.html';
+        } else {
+          window.location.href = 'CECAPRIAN.html';
+        }
+      } catch (e) {
+        // Si hay error, continuar con el login
+      }
+    }
+  </script>
+</body>
+</html>

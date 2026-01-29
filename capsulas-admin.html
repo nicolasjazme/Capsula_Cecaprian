@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cápsulas - Cecaprian ONLINE</title>
+  <!-- Google Fonts y Font Awesome para íconos -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #f3f7fa 0%, #e0efff 100%);
+      min-height: 100vh;
+      color: #1d3354;
+      padding-bottom: 90px;
+    }
+    header {
+      background: linear-gradient(90deg, #1a5796 0%, #21a2df 100%);
+      color: #fff;
+      padding: 0 0 18px 0;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 24px rgba(34,64,180,0.05);
+      border-bottom-left-radius: 36px;
+      border-bottom-right-radius: 36px;
+    }
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 12px 20px 0 20px;
+    }
+    .logo-title {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .logo-title img {
+      height: 52px;
+      width: 52px;
+      border-radius: 18%;
+      box-shadow: 0 2px 10px #21a2df33;
+      background: #fff;
+      object-fit: contain;
+      border: 2.5px solid #f2f8fc;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 700;
+      font-size: 2em;
+      letter-spacing: 2px;
+    }
+    nav ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      gap: 38px;
+      font-size: 1.10em;
+    }
+    nav ul li a {
+      color: #d7ebfa;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s, border-bottom 0.2s;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+    }
+    nav ul li a:hover, nav ul li.active a {
+      color: #fff;
+      border-bottom: 2px solid #fff;
+    }
+    .subheader {
+      text-align: center;
+      font-size: 1.22em;
+      margin: 9px 0 0 0;
+      color: #bce3fe;
+      font-weight: 400;
+      letter-spacing: 1.5px;
+      padding-bottom: 7px;
+    }
+
+    section {
+      max-width: 900px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(21,74,156,0.07);
+      padding: 32px 24px 28px 24px;
+    }
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      font-size: 1.6em;
+      color: #176BC2;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    /* Cápsulas */
+    #listaCapsulas {
+      margin-top: 24px;
+    }
+    .unidad-contenedor {
+      margin-bottom: 36px;
+    }
+    .unidad-titulo {
+      background: linear-gradient(90deg, #1a5796 0%, #21a2df 100%);
+      color: white;
+      padding: 14px 18px;
+      border-radius: 8px 8px 0 0;
+      margin: 0;
+      font-size: 1.1em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .unidad-titulo i {
+      font-size: 1.2em;
+    }
+    .capsulas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      padding: 18px;
+      background: #f9fbfd;
+      border-radius: 0 0 8px 8px;
+      border: 1px solid #e0efff;
+      border-top: none;
+    }
+    .capsula {
+      background: #eaf3fb;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(34,44,80,0.06);
+      padding: 0;
+      margin-bottom: 0;
+      border: 0;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.25s, transform 0.25s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      height: 100%;
+    }
+    .capsula:hover {
+      box-shadow: 0 6px 18px rgba(21,74,156,0.12);
+      transform: translateY(-3px);
+    }
+    .capsula-miniatura {
+      width: 100%;
+      height: 140px;
+      background: #1a5796;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .capsula-miniatura img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .capsula-miniatura .play-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      z-index: 10;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .capsula:hover .play-overlay {
+      background: rgba(26, 87, 150, 0.9);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    .capsula-info {
+      padding: 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .capsula-info h3 {
+      margin: 0 0 6px 0;
+      color: #1a5796;
+      font-size: 0.95em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .capsula-info p {
+      margin: 0;
+      color: #2a4276;
+      font-size: 0.8em;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .btn-eliminar {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+      z-index: 10;
+    }
+    .btn-eliminar:hover {
+      background: #c82333;
+      transform: scale(1.1);
+    }
+    .btn-eliminar:active {
+      transform: scale(0.95);
+    }
+    .mensaje-vacio {
+      text-align: center;
+      color: #7a9bc4;
+      font-size: 1.1em;
+      padding: 40px 20px;
+    }
+    /* Evaluaciones */
+    .evaluacion-card {
+      background: linear-gradient(135deg, #e8f2ff 0%, #f7fafd 100%);
+      border-left: 4px solid #21a2df;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.2s;
+      box-shadow: 0 2px 8px rgba(34,64,180,0.06);
+    }
+    .evaluacion-card:hover {
+      box-shadow: 0 4px 16px rgba(34,64,180,0.12);
+      transform: translateX(4px);
+    }
+    .evaluacion-titulo {
+      font-size: 1.15em;
+      font-weight: 600;
+      color: #1a5796;
+      margin: 0 0 8px 0;
+    }
+    .evaluacion-desc {
+      color: #2a4276;
+      font-size: 0.95em;
+      margin: 0 0 12px 0;
+    }
+    .evaluacion-preguntas {
+      display: inline-block;
+      background: #1a5796;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 500;
+    }
+    .btn-responder {
+      float: right;
+      background: linear-gradient(90deg, #1a5796 0%, #21a2df 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .btn-responder:hover {
+      background: linear-gradient(90deg, #1a87c9 0%, #2290c4 100%);
+    }
+    .sin-evaluaciones {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7a9bc4;
+    }
+    .sin-evaluaciones i {
+      font-size: 3em;
+      color: #b6d6f6;
+      margin-bottom: 15px;
+      display: block;
+    }
+    /* Modal de evaluación */
+    .modal-evaluacion {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1002;
+      padding: 20px;
+    }
+    .modal-evaluacion-contenido {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+    .modal-evaluacion-titulo {
+      font-size: 1.5em;
+      color: #1a5796;
+      margin: 0 0 10px 0;
+      font-weight: 700;
+    }
+    .modal-evaluacion-desc {
+      color: #7a9bc4;
+      margin: 0 0 20px 0;
+      font-size: 0.95em;
+    }
+    .pregunta-item {
+      margin-bottom: 25px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid #e0efff;
+    }
+    .pregunta-item:last-child {
+      border-bottom: none;
+    }
+    .pregunta-texto {
+      font-weight: 600;
+      color: #1a5796;
+      margin-bottom: 12px;
+      font-size: 1.05em;
+    }
+    .opcion-respuesta {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .opcion-respuesta input[type="radio"] {
+      margin-right: 10px;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+    }
+    .opcion-respuesta label {
+      cursor: pointer;
+      flex: 1;
+      margin: 0;
+      padding: 8px 12px;
+      background: #f2f8fc;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .opcion-respuesta input[type="radio"]:checked + label {
+      background: #e0efff;
+      color: #1a5796;
+      font-weight: 500;
+    }
+    .modal-botones-eval {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 30px;
+    }
+    .btn-cancelar-eval {
+      background: #e0e0e0;
+      color: #333;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-enviar-eval {
+      background: linear-gradient(90deg, #1a5796 0%, #21a2df 100%);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-enviar-eval:hover {
+      background: linear-gradient(90deg, #1a87c9 0%, #2290c4 100%);
+    }
+    /* Footer/Redes */
+    .footer {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100vw;
+      text-align: center;
+      background: linear-gradient(90deg, #1a5796ad 0%, #21a2dfc0 100%);
+      color: #fff;
+      font-size: 1em;
+      padding: 18px 4px 17px 4px;
+      border-top-left-radius: 30px;
+      border-top-right-radius: 30px;
+      z-index: 99;
+      box-shadow: 0 -2px 16px #1a579655;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer .rrss {
+      margin: 0 auto;
+      display: flex;
+      gap: 20px;
+    }
+    .footer .rrss a {
+      color: #aee0fd;
+      font-size: 1.38em;
+      background: #ffffff14;
+      border-radius: 50%;
+      padding: 8px 12px;
+      transition: background 0.16s, color 0.16s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer .rrss a:hover {
+      background: #fff;
+      color: #176BC2;
+    }
+    .footer span {
+      font-size: 0.98em;
+      letter-spacing: 0.5px;
+      color: #e0f5ff;
+    }
+    /* Sección de Inicio */
+    .inicio-header {
+      background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .inicio-usuario {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin: 0 0 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .inicio-mensaje {
+      font-size: 0.95em;
+      opacity: 0.95;
+      margin: 0;
+    }
+    .pendientes-contenedor {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    .pendientes-titulo {
+      font-weight: 600;
+      color: #856404;
+      margin: 0 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pendientes-lista {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .pendientes-lista li {
+      padding: 8px 12px;
+      background: white;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 3px solid #ffc107;
+    }
+    .pendientes-lista li:last-child {
+      margin-bottom: 0;
+    }
+    .pendientes-lista li i {
+      color: #ffc107;
+      font-size: 1.1em;
+    }
+    /* Barra de Progreso */
+    .progreso-contenedor {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f2f8fc;
+      border-radius: 8px;
+    }
+    .progreso-titulo {
+      font-weight: 600;
+      color: #1a5796;
+      margin: 0 0 10px 0;
+      font-size: 0.95em;
+    }
+    .progreso-barra {
+      width: 100%;
+      height: 24px;
+      background: #e0efff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #1a5796;
+      position: relative;
+    }
+    .progreso-relleno {
+      height: 100%;
+      background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.85em;
+    }
+    .progreso-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .stat-card {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid #e0efff;
+    }
+    .stat-card i {
+      font-size: 1.5em;
+      margin-bottom: 8px;
+    }
+    .stat-card .stat-label {
+      font-size: 0.85em;
+      color: #7a9bc4;
+      margin: 0;
+    }
+    .stat-card .stat-valor {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin: 5px 0 0 0;
+    }
+    .stat-aprobadas {
+      color: #28a745;
+    }
+    .stat-pendientes {
+      color: #ff9800;
+    }
+    .stat-desaprobadas {
+      color: #dc3545;
+    }
+
+    /* Responsive */
+    @media (max-width: 730px) {
+      section {
+        max-width: 97vw;
+        padding: 20px 8px 18px 8px;
+      }
+      .capsula video {
+        max-width: 100vw;
+      }
+      .nav-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .logo-title img {
+        height: 38px;
+        width: 38px;
+      }
+      header h1 {
+        font-size: 1.3em;
+      }
+      .rrss a {
+        font-size: 1.18em;
+        padding: 7px 9px;
+      }
+      .footer {
+        font-size: 0.93em;
+        padding: 11px 3px 11px 3px;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-bar">
+      <div class="logo-title">
+        <img src="Fotos/Logo 1.png" alt="Logo Cecaprian" />
+        <h1>Cecaprian Capsulas</h1>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#" onclick="verificarYRedirigir(); return false;">Inicio</a></li>
+          <li class="active"><a href="capsulas.html">Cápsulas</a></li>
+          <li><a href="#" onclick="cerrarSesion(); return false;" style="color: #ffcccc;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="subheader">Portal de cápsulas de video para alumnos.</div>
+  </header>
+
+  <!-- Sección de Inicio -->
+  <section>
+    <h2 style="display: flex; align-items: center; gap: 10px;">
+      <i class="fas fa-home"></i> Bienvenida
+    </h2>
+    <div id="seccionInicio">
+      <!-- Se cargará dinámicamente con el nombre del usuario y progreso -->
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Listado de cápsulas -->
+  <section>
+    <h2>Cápsulas disponibles</h2>
+    <div id="listaCapsulas">
+      <div class="mensaje-vacio" id="mensajeVacio" style="display: none;">
+        No hay cápsulas disponibles todavía.
+      </div>
+    </div>
+
+    <h3 style="margin-top: 30px; color: #1a5796; border-bottom: 2px solid #e0efff; padding-bottom: 10px;">
+      <i class="fas fa-clipboard-list"></i> Evaluaciones
+    </h3>
+    <div id="listaEvaluaciones">
+      <div class="sin-evaluaciones">
+        <i class="fas fa-clipboard-list"></i>
+        <p>No hay evaluaciones disponibles todavía.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="rrss">
+      <a href="https://facebook.com/cecaprian" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/cecaprian/#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/message/OGJQJHWXCOODJ1" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian· Inspirado en <a href="https://www.cecaprian.com" target="_blank" style="color:#fff; text-decoration:underline;">cecaprian.com</a></span>
+  </footer>
+
+  <script>
+    // Verificar sesión (usuario o admin pueden ver)
+    function verificarSesion() {
+      const sesionGuardada = localStorage.getItem('sesion');
+      if (!sesionGuardada) {
+        window.location.href = 'login.html';
+        return false;
+      }
+      
+      try {
+        const sesion = JSON.parse(sesionGuardada);
+        if (sesion.tipo !== 'usuario' && sesion.tipo !== 'admin') {
+          window.location.href = 'login.html';
+          return false;
+        }
+        return true;
+      } catch (e) {
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
+
+    // Verificar y redirigir según tipo de usuario
+    function verificarYRedirigir() {
+      const sesionGuardada = localStorage.getItem('sesion');
+      if (sesionGuardada) {
+        try {
+          const sesion = JSON.parse(sesionGuardada);
+          if (sesion.tipo === 'admin') {
+            window.location.href = 'CECAPRIAN.html';
+          } else {
+            // Usuario permanece en esta página
+            return false;
+          }
+        } catch (e) {
+          window.location.href = 'login.html';
+        }
+      } else {
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Cerrar sesión
+    function cerrarSesion() {
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        localStorage.removeItem('sesion');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Verificar sesión al cargar la página
+    if (!verificarSesion()) {
+      // La redirección ya se hizo en verificarSesion
+    }
+
+    const lista = document.getElementById('listaCapsulas');
+    const mensajeVacio = document.getElementById('mensajeVacio');
+    const listaEvaluaciones = document.getElementById('listaEvaluaciones');
+    const seccionInicio = document.getElementById('seccionInicio');
+
+    // Convertir URL de YouTube a formato embebido
+    function convertirYouTubeUrl(url) {
+      if (!url) return null;
+      
+      let videoId = null;
+      
+      // Limpiar la URL
+      url = url.trim();
+      
+      // Diferentes formatos de URL de YouTube (orden específico)
+      // 1. Formato youtu.be (más simple, verificar primero)
+      const youtuBeMatch = url.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (youtuBeMatch && youtuBeMatch[1]) {
+        videoId = youtuBeMatch[1];
+      }
+      // 2. Formato youtube.com/watch?v=
+      else {
+        const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+        if (watchMatch && watchMatch[1]) {
+          videoId = watchMatch[1];
+        }
+        // 3. Formato youtube.com/embed/
+        else {
+          const embedMatch = url.match(/(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+          if (embedMatch && embedMatch[1]) {
+            videoId = embedMatch[1];
+          }
+          // 4. Formato youtube.com/v/
+          else {
+            const vMatch = url.match(/(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/);
+            if (vMatch && vMatch[1]) {
+              videoId = vMatch[1];
+            }
+            // 5. Formato con parámetros adicionales
+            else {
+              const paramMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+              if (paramMatch && paramMatch[1]) {
+                videoId = paramMatch[1];
+              }
+            }
+          }
+        }
+      }
+      
+      if (videoId && videoId.length === 11) {
+        // Agregar parámetros para mejor calidad de video
+        return `https://www.youtube.com/embed/${videoId}?hd=1&vq=hd1080&rel=0&modestbranding=1`;
+      }
+      
+      return null;
+    }
+
+    // Convertir URL de Vimeo a formato embebido
+    function convertirVimeoUrl(url) {
+      const regExp = /(?:vimeo)\.com.*(?:videos|video|channels|)\/([\d]+)/i;
+      const match = url.match(regExp);
+      // Agregar parámetros para mejor calidad
+      return match ? `https://player.vimeo.com/video/${match[1]}?quality=1080p&autopause=0` : null;
+    }
+
+    // Convertir URL de Google Drive a formato embebido
+    function convertirGoogleDriveUrl(url) {
+      if (!url) return null;
+      
+      // Detectar diferentes formatos de Google Drive
+      // Formato: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+      // Formato: https://drive.google.com/open?id=FILE_ID
+      // Formato: https://drive.google.com/file/d/FILE_ID/preview
+      
+      let fileId = null;
+      
+      // Patrón 1: /file/d/FILE_ID/
+      const filePattern1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (filePattern1 && filePattern1[1]) {
+        fileId = filePattern1[1];
+      }
+      // Patrón 2: ?id=FILE_ID
+      else {
+        const filePattern2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (filePattern2 && filePattern2[1]) {
+          fileId = filePattern2[1];
+        }
+      }
+      
+      if (fileId) {
+        // Convertir a formato preview para embed
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+      
+      return null;
+    }
+
+    // Mostrar una cápsula
+    function mostrarCapsula(capsula) {
+      let videoHtml = '';
+      // Compatibilidad con formato antiguo (videoData) y nuevo (videoUrl)
+      const url = capsula.videoUrl || capsula.videoData;
+      
+      // Verificar si es YouTube
+      const youtubeEmbed = convertirYouTubeUrl(url);
+      if (youtubeEmbed) {
+        // Extraer el ID del video para crear un enlace alternativo
+        const videoIdMatch = youtubeEmbed.match(/embed\/([a-zA-Z0-9_-]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        const youtubeLink = videoId ? `https://www.youtube.com/watch?v=${videoId}` : url;
+        
+        videoHtml = `
+          <div style="position: relative; width: 100%; max-width: 100%;">
+            <iframe width="100%" height="500" src="${youtubeEmbed}" frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen 
+              style="border-radius: 8px; width: 100%;" 
+              loading="lazy">
+            </iframe>
+            <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px;">
+              <a href="${youtubeLink}" target="_blank" style="color: white; text-decoration: none; font-size: 0.85em;">
+                <i class="fab fa-youtube"></i> Ver en YouTube
+              </a>
+            </div>
+          </div>
+        `;
+      }
+      // Verificar si es Vimeo
+      else if (convertirVimeoUrl(url)) {
+        const vimeoEmbed = convertirVimeoUrl(url);
+        videoHtml = `<iframe width="100%" height="500" src="${vimeoEmbed}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>`;
+      }
+      // Verificar si es Google Drive
+      else if (convertirGoogleDriveUrl(url)) {
+        const driveEmbed = convertirGoogleDriveUrl(url);
+        const driveLink = url; // Mantener la URL original para el enlace
+        videoHtml = `
+          <div style="position: relative; width: 100%; max-width: 100%;">
+            <iframe width="100%" height="500" src="${driveEmbed}" frameborder="0" 
+              allow="autoplay; fullscreen" 
+              allowfullscreen 
+              style="border-radius: 8px; width: 100%;" 
+              loading="lazy">
+            </iframe>
+            <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px;">
+              <a href="${driveLink}" target="_blank" style="color: white; text-decoration: none; font-size: 0.85em;">
+                <i class="fab fa-google-drive"></i> Ver en Drive
+              </a>
+            </div>
+          </div>
+        `;
+      }
+      // URL directa de video
+      else {
+        videoHtml = `<video src="${url}" controls preload="metadata" style="width: 100%; max-width: 520px; border-radius: 8px;">
+          Tu navegador no soporta la reproducción de video.
+        </video>`;
+      }
+      
+      // Crear un ID único para la cápsula si no existe
+      const capsulaId = capsula.id || capsula.fecha || Date.now().toString();
+      
+      // Verificar si es administrador para mostrar botón de eliminar
+      const sesionGuardada = localStorage.getItem('sesion');
+      let esAdmin = false;
+      if (sesionGuardada) {
+        try {
+          const sesion = JSON.parse(sesionGuardada);
+          esAdmin = sesion.tipo === 'admin';
+        } catch (e) {}
+      }
+      
+      const div = document.createElement('div');
+      div.className = 'capsula';
+      const botonEliminar = esAdmin ? `
+        <button class="btn-eliminar" onclick="eliminarCapsula('${capsulaId}')" title="Eliminar cápsula">
+          <i class="fas fa-times"></i>
+        </button>
+      ` : '';
+      div.innerHTML = `
+        ${botonEliminar}
+        <h3>${capsula.titulo}</h3>
+        <p>${capsula.descripcion || ''}</p>
+        ${videoHtml}
+      `;
+      div.setAttribute('data-capsula-id', capsulaId);
+      lista.appendChild(div);
+      
+      // Verificar si el iframe carga correctamente después de un tiempo
+      const iframe = div.querySelector('iframe');
+      if (iframe && youtubeEmbed) {
+        // Agregar un listener para detectar errores
+        iframe.addEventListener('load', function() {
+          // Si el iframe carga pero muestra error, detectarlo después de un momento
+          setTimeout(function() {
+            try {
+              // Intentar acceder al contenido del iframe (solo funciona si es del mismo origen)
+              // Si hay error 153, el iframe mostrará un mensaje de error
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+              // Si llegamos aquí sin error, el iframe cargó correctamente
+            } catch (e) {
+              // Error de cross-origin es normal, no hacer nada
+            }
+          }, 2000);
+        });
+        
+        // Si el iframe falla, mostrar alternativa
+        iframe.onerror = function() {
+          const url = capsula.videoUrl || capsula.videoData;
+          const container = iframe.closest('div[style*="position: relative"]');
+          if (container) {
+            container.innerHTML = `
+              <div style="padding: 40px; text-align: center; background: #eaf3fb; border-radius: 8px; border: 2px dashed #1a5796;">
+                <i class="fab fa-youtube" style="font-size: 3em; color: #ff0000; margin-bottom: 15px;"></i>
+                <p style="color: #1a5796; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600;">Este video no se puede mostrar aquí</p>
+                <p style="color: #2a4276; margin: 0 0 20px 0;">El video puede tener restricciones de embedding o requiere verificación.</p>
+                <a href="${url}" target="_blank" style="display: inline-block; background: #ff0000; color: white; padding: 12px 24px; border-radius: 24px; text-decoration: none; font-weight: 600;">
+                  <i class="fab fa-youtube"></i> Ver en YouTube
+                </a>
+              </div>
+            `;
+          }
+        };
+      }
+    }
+
+    // Eliminar cápsula
+    function eliminarCapsula(capsulaId) {
+      if (!confirm('¿Estás seguro de que quieres eliminar esta cápsula?')) {
+        return;
+      }
+      
+      try {
+        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const capsulasFiltradas = capsulas.filter(c => {
+          const id = c.id || c.fecha;
+          return id !== capsulaId;
+        });
+        localStorage.setItem('capsulas', JSON.stringify(capsulasFiltradas));
+        
+        // Eliminar el elemento del DOM
+        const elemento = document.querySelector(`[data-capsula-id="${capsulaId}"]`);
+        if (elemento) {
+          elemento.style.transition = 'opacity 0.3s, transform 0.3s';
+          elemento.style.opacity = '0';
+          elemento.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            elemento.remove();
+            // Si no hay más cápsulas, mostrar mensaje
+            if (lista.children.length === 0) {
+              mensajeVacio.style.display = 'block';
+            }
+          }, 300);
+        }
+      } catch (error) {
+        console.error('Error al eliminar cápsula:', error);
+        alert('Error al eliminar la cápsula');
+      }
+    }
+
+    // Cargar y mostrar evaluaciones
+    function cargarEvaluaciones() {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      const sesion = JSON.parse(localStorage.getItem('sesion'));
+      listaEvaluaciones.innerHTML = '';
+
+      if (evaluaciones.length === 0) {
+        listaEvaluaciones.innerHTML = `
+          <div class="sin-evaluaciones">
+            <i class="fas fa-clipboard-list"></i>
+            <p>No hay evaluaciones disponibles todavía.</p>
+          </div>
+        `;
+        return;
+      }
+
+      evaluaciones.forEach((eval, index) => {
+        const div = document.createElement('div');
+        div.className = 'evaluacion-card';
+        
+        // Obtener intentos del usuario para esta evaluación
+        const intentosDelUsuario = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.username && r.evaluacionId === eval.id);
+        const intentosDisponibles = 3 - intentosDelUsuario.length;
+        const bloqueado = intentosDisponibles <= 0;
+        
+        // Obtener mejor resultado
+        let mejorResultado = null;
+        let aprobado = false;
+        if (intentosDelUsuario.length > 0) {
+          mejorResultado = intentosDelUsuario.reduce((best, current) => 
+            current.porcentaje > best.porcentaje ? current : best
+          );
+          aprobado = mejorResultado.porcentaje >= 80;
+        }
+
+        let estadoHtml = '';
+        if (bloqueado && !aprobado) {
+          estadoHtml = `
+            <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 10px; margin: 10px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #721c24; font-weight: 600;">
+                <i class="fas fa-times-circle"></i> Intentos agotados - No aprobado
+              </p>
+            </div>
+          `;
+        } else if (aprobado) {
+          estadoHtml = `
+            <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #155724; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> ✓ Aprobado (${mejorResultado.porcentaje}%)
+              </p>
+            </div>
+          `;
+        }
+
+        let intentosHtml = `
+          <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: 0.9em;">
+            <i class="fas fa-redo"></i> Intentos disponibles: 
+            <strong style="color: ${intentosDisponibles === 0 ? '#dc3545' : intentosDisponibles === 1 ? '#ff6b6b' : '#28a745'};">
+              ${intentosDisponibles}/3
+            </strong>
+          </div>
+        `;
+
+        let botonHtml = '';
+        if (!bloqueado) {
+          botonHtml = `
+            <button class="btn-responder" onclick="abrirEvaluacion(${index})">
+              <i class="fas fa-pencil-alt"></i> ${aprobado ? 'Reintentar' : 'Responder'}
+            </button>
+          `;
+        } else {
+          botonHtml = `
+            <button class="btn-responder" style="background: #ccc; cursor: not-allowed;" disabled>
+              <i class="fas fa-lock"></i> Bloqueado
+            </button>
+          `;
+        }
+
+        div.innerHTML = `
+          <h3 class="evaluacion-titulo">${eval.titulo}</h3>
+          <p class="evaluacion-desc">${eval.descripcion}</p>
+          <span class="evaluacion-preguntas">
+            <i class="fas fa-question-circle"></i> ${eval.preguntas.length} preguntas
+          </span>
+          ${estadoHtml}
+          ${intentosHtml}
+          ${botonHtml}
+          <div style="clear: both;"></div>
+        `;
+        listaEvaluaciones.appendChild(div);
+      });
+    }
+
+    // Cargar sección de inicio
+    function cargarSeccionInicio() {
+      const sesion = JSON.parse(localStorage.getItem('sesion'));
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+      
+      // Obtener evaluaciones pendientes (sin respuestas o que no han agotado intentos)
+      const evaluacionesPendientes = [];
+      evaluaciones.forEach(eval => {
+        const intentosDelUsuario = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.username && r.evaluacionId === eval.id);
+        const bloqueado = intentosDelUsuario.length >= 3;
+        
+        if (!bloqueado) {
+          evaluacionesPendientes.push(eval);
+        }
+      });
+
+      // HTML de pendientes
+      let pendientesHtml = '';
+      if (evaluacionesPendientes.length > 0) {
+        pendientesHtml = `
+          <div class="pendientes-contenedor">
+            <h4 class="pendientes-titulo">
+              <i class="fas fa-tasks"></i> Evaluaciones Pendientes (${evaluacionesPendientes.length})
+            </h4>
+            <ul class="pendientes-lista">
+              ${evaluacionesPendientes.map(eval => `
+                <li>
+                  <i class="fas fa-check-circle"></i>
+                  <strong>${eval.titulo}</strong>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      // HTML de documentos
+      let documentosHtml = '';
+      if (documentos.length > 0) {
+        documentosHtml = `
+          <div style="background: #e7f3ff; border-left: 4px solid #21a2df; padding: 15px; border-radius: 6px; margin: 15px 0;">
+            <h4 style="font-weight: 600; color: #1a5796; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-file-pdf"></i> Documentación Disponible (${documentos.length})
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+              ${documentos.map(doc => `
+                <a href="${doc.contenido}" download="${doc.nombre}.pdf" style="
+                  background: white;
+                  padding: 12px;
+                  border-radius: 6px;
+                  text-decoration: none;
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  border: 1px solid #b6d6f6;
+                  transition: all 0.2s;
+                  color: #1a5796;
+                ">
+                  <i class="fas fa-download" style="color: #dc3545; font-size: 1.2em;"></i>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 0.9em; word-break: break-word;">${doc.nombre}</div>
+                    <div style="font-size: 0.8em; color: #7a9bc4;">${doc.tamanio}</div>
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      seccionInicio.innerHTML = `
+        <div class="inicio-header">
+          <h3 class="inicio-usuario">
+            <i class="fas fa-user-circle"></i> ${sesion.username}
+          </h3>
+          <p class="inicio-mensaje">¡Bienvenido! Aquí está tu resumen de aprendizaje.</p>
+        </div>
+
+        ${pendientesHtml}
+
+        <div class="progreso-contenedor">
+          <div class="progreso-titulo">
+            <i class="fas fa-chart-pie"></i> Tu Progreso General
+          </div>
+        </div>
+
+        ${documentosHtml}
+      `;
+
+      // Cargar la barra de progreso en la sección de inicio
+      if (evaluaciones.length > 0) {
+        const respuestasGuardadas = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+        let aprobadas = 0;
+        let desaprobadas = 0;
+
+        evaluaciones.forEach(eval => {
+          const intentosDelUsuario = respuestasGuardadas.filter(r => r.usuarioId === sesion.username && r.evaluacionId === eval.id);
+          const bloqueado = intentosDelUsuario.length >= 3;
+          
+          if (bloqueado) {
+            const mejorResultado = intentosDelUsuario.reduce((best, current) => 
+              current.porcentaje > best.porcentaje ? current : best
+            );
+            if (mejorResultado.porcentaje >= 80) {
+              aprobadas++;
+            } else {
+              desaprobadas++;
+            }
+          }
+        });
+
+        const pendientes = evaluaciones.length - aprobadas - desaprobadas;
+        const porcentajeAvance = evaluaciones.length > 0 ? Math.round((aprobadas / evaluaciones.length) * 100) : 0;
+
+        const progresoHtml = `
+          <div class="progreso-barra">
+            <div class="progreso-relleno" style="width: ${porcentajeAvance}%;">
+              ${porcentajeAvance > 10 ? porcentajeAvance + '%' : ''}
+            </div>
+          </div>
+          <div class="progreso-stats">
+            <div class="stat-card">
+              <i class="fas fa-check-circle stat-aprobadas"></i>
+              <p class="stat-label">Aprobadas</p>
+              <p class="stat-valor">${aprobadas}/${evaluaciones.length}</p>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-clock stat-pendientes"></i>
+              <p class="stat-label">Pendientes</p>
+              <p class="stat-valor">${pendientes}</p>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-times-circle stat-desaprobadas"></i>
+              <p class="stat-label">Desaprobadas</p>
+              <p class="stat-valor">${desaprobadas}</p>
+            </div>
+          </div>
+        `;
+
+        // Inyectar la barra de progreso en la sección de inicio
+        const progresoDiv = seccionInicio.querySelector('.progreso-contenedor');
+        if (progresoDiv) {
+          progresoDiv.innerHTML += progresoHtml;
+        }
+      }
+    }
+
+    // Cargar barra de progreso
+    // Abrir modal para responder evaluación
+    function abrirEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+
+      if (!eval) return;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-evaluacion';
+      modal.id = 'modal-evaluacion';
+
+      let preguntasHTML = '';
+      eval.preguntas.forEach((preg, pregIndex) => {
+        preguntasHTML += `
+          <div class="pregunta-item">
+            <div class="pregunta-texto">${pregIndex + 1}. ${preg.pregunta}</div>
+        `;
+        preg.opciones.forEach((opcion, opIndex) => {
+          const radioId = `preg-${pregIndex}-opt-${opIndex}`;
+          preguntasHTML += `
+            <div class="opcion-respuesta">
+              <input type="radio" id="${radioId}" name="preg${pregIndex}" value="${opcion}">
+              <label for="${radioId}">${opcion}</label>
+            </div>
+          `;
+        });
+        preguntasHTML += `</div>`;
+      });
+
+      modal.innerHTML = `
+        <div class="modal-evaluacion-contenido">
+          <h2 class="modal-evaluacion-titulo">${eval.titulo}</h2>
+          <p class="modal-evaluacion-desc">${eval.descripcion}</p>
+          <div id="preguntasContainer">${preguntasHTML}</div>
+          <div class="modal-botones-eval">
+            <button class="btn-cancelar-eval" onclick="document.getElementById('modal-evaluacion').remove()">
+              Cancelar
+            </button>
+            <button class="btn-enviar-eval" onclick="enviarEvaluacion(${index})">
+              <i class="fas fa-check"></i> Enviar Evaluación
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    // Enviar evaluación
+    function enviarEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+      const respuestas = [];
+      let aciertos = 0;
+
+      try {
+        // Recopilar respuestas
+        eval.preguntas.forEach((preg, pregIndex) => {
+          const radioSeleccionado = document.querySelector(`input[name="preg${pregIndex}"]:checked`);
+          if (!radioSeleccionado) {
+            alert(`Por favor responde la pregunta ${pregIndex + 1}`);
+            throw new Error('Pregunta no respondida');
+          }
+          const respuestaUsuario = radioSeleccionado.value;
+          const esCorrecta = respuestaUsuario === preg.respuestaCorrecta;
+          if (esCorrecta) aciertos++;
+          respuestas.push({
+            pregunta: preg.pregunta,
+            respuesta: respuestaUsuario,
+            correcta: preg.respuestaCorrecta,
+            esCorrecta: esCorrecta
+          });
+        });
+
+        // Calcular porcentaje
+        const porcentaje = Math.round((aciertos / eval.preguntas.length) * 100);
+        const aprobado = porcentaje >= 80;
+
+        // Guardar respuesta
+        const sesion = JSON.parse(localStorage.getItem('sesion'));
+        const respuestasGuardadas = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+        respuestasGuardadas.push({
+          usuarioId: sesion.username,
+          evaluacionId: eval.id,
+          evaluacionTitulo: eval.titulo,
+          respuestas: respuestas,
+          aciertos: aciertos,
+          total: eval.preguntas.length,
+          porcentaje: porcentaje,
+          aprobado: aprobado,
+          fecha: new Date().toISOString()
+        });
+
+        localStorage.setItem('respuestasEvaluaciones', JSON.stringify(respuestasGuardadas));
+        document.getElementById('modal-evaluacion').remove();
+        
+        let mensaje = `¡Evaluación completada!\n\nResultado: ${aciertos}/${eval.preguntas.length} respuestas correctas (${porcentaje}%)`;
+        if (aprobado) {
+          mensaje += '\n\n✓ ¡APROBADO!';
+        } else {
+          mensaje += '\n\n✗ No aprobado. Necesitas 80% o más.';
+        }
+        
+        alert(mensaje);
+        cargarEvaluaciones();
+        cargarSeccionInicio();
+      } catch (error) {
+        if (error.message !== 'Pregunta no respondida') {
+          console.error('Error al enviar evaluación:', error);
+          alert('Error al procesar la evaluación');
+        }
+      }
+    }
+
+    // Cargar y mostrar todas las evaluaciones guardadas
+    function cargarYMostrarEvaluaciones() {
+      try {
+        cargarSeccionInicio();
+        cargarEvaluaciones();
+      } catch (error) {
+        console.error('Error al cargar evaluaciones:', error);
+      }
+    }
+
+    // Cargar evaluaciones al iniciar
+    cargarYMostrarEvaluaciones();
+
+    // Cargar y mostrar todas las cápsulas guardadas
+    function cargarCapsulas() {
+      try {
+        const capsulasGuardadas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        
+        // Filtrar cápsulas válidas (compatibilidad con formato antiguo y nuevo)
+        const capsulasValidas = capsulasGuardadas.filter(c => {
+          const url = c.videoUrl || c.videoData;
+          return c.titulo && url;
+        });
+        
+        if (capsulasValidas.length === 0) {
+          mensajeVacio.style.display = 'block';
+          return;
+        }
+
+        mensajeVacio.style.display = 'none';
+        lista.innerHTML = '';
+        
+        // Agrupar cápsulas por unidad
+        const capsulasAgrupadas = {};
+        capsulasValidas.forEach(capsula => {
+          if (!capsula.id) {
+            capsula.id = capsula.fecha || Date.now().toString();
+          }
+          const unidad = capsula.unidad || 'Sin Unidad';
+          if (!capsulasAgrupadas[unidad]) {
+            capsulasAgrupadas[unidad] = [];
+          }
+          capsulasAgrupadas[unidad].push(capsula);
+        });
+
+        // Mostrar cápsulas agrupadas por unidad
+        Object.keys(capsulasAgrupadas).sort().forEach(unidad => {
+          const divUnidad = document.createElement('div');
+          divUnidad.className = 'unidad-contenedor';
+          
+          const titulo = document.createElement('h3');
+          titulo.className = 'unidad-titulo';
+          titulo.innerHTML = `<i class="fas fa-folder"></i> ${unidad}`;
+          
+          const gridCapsulas = document.createElement('div');
+          gridCapsulas.className = 'capsulas-grid';
+          
+          capsulasAgrupadas[unidad].forEach(capsula => {
+            const divCapsula = crearElementoCapsula(capsula);
+            gridCapsulas.appendChild(divCapsula);
+          });
+          
+          divUnidad.appendChild(titulo);
+          divUnidad.appendChild(gridCapsulas);
+          lista.appendChild(divUnidad);
+        });
+        
+      } catch (error) {
+        console.error('Error al cargar cápsulas:', error);
+        mensajeVacio.style.display = 'block';
+        mensajeVacio.innerHTML = 'Error al cargar las cápsulas. Por favor recarga la página.';
+      }
+    }
+
+    // Crear elemento cápsula (para el grid pequeño)
+    function crearElementoCapsula(capsula) {
+      const div = document.createElement('div');
+      div.className = 'capsula';
+      
+      const url = capsula.videoData || capsula.videoUrl;
+      const capsulaId = capsula.id || capsula.fecha || Date.now().toString();
+      
+      let miniaturaHtml = '';
+      let videoEmbedUrl = '';
+      
+      // Escapar comillas para JavaScript
+      const tituloEscapado = (capsula.titulo || 'Sin título').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const descripcionEscapada = (capsula.descripcion || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      
+      // Verificar si es YouTube
+      const youtubeEmbed = convertirYouTubeUrl(url);
+      if (youtubeEmbed) {
+        const videoIdMatch = youtubeEmbed.match(/embed\/([a-zA-Z0-9_-]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        if (videoId) {
+          videoEmbedUrl = youtubeEmbed;
+          videoLink = `https://www.youtube.com/watch?v=${videoId}`;
+          miniaturaHtml = `<img src="${obtenerYouTubeThumbnail(videoId)}" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'" style="width: 100%; height: 100%; object-fit: cover;">`;
+        }
+      }
+      // Verificar si es Vimeo
+      else if (convertirVimeoUrl(url)) {
+        const vimeoEmbed = convertirVimeoUrl(url);
+        videoEmbedUrl = vimeoEmbed;
+        videoLink = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px;"><i class="fab fa-vimeo"></i></div>`;
+      }
+      // Verificar si es Google Drive
+      else if (convertirGoogleDriveUrl(url)) {
+        const driveEmbed = convertirGoogleDriveUrl(url);
+        videoEmbedUrl = driveEmbed;
+        videoLink = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px;"><i class="fab fa-google-drive"></i></div>`;
+      }
+      // URL directa de video
+      else {
+        videoEmbedUrl = url;
+        videoLink = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px;"><i class="fas fa-video"></i></div>`;
+      }
+      
+      div.innerHTML = `
+        <div class="capsula-miniatura" onclick="verVideoCompleto('${capsulaId}', '${videoEmbedUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${tituloEscapado}', '${descripcionEscapada}')">
+          ${miniaturaHtml}
+          <div class="play-overlay">
+            <i class="fas fa-play"></i>
+          </div>
+        </div>
+        <div class="capsula-info">
+          <h3>${capsula.titulo || 'Sin título'}</h3>
+          <p>${capsula.descripcion || ''}</p>
+        </div>
+      `;
+      div.setAttribute('data-capsula-id', capsulaId);
+      return div;
+    }
+
+    // Cargar cápsulas al iniciar
+    cargarCapsulas();
+  </script>
+</body>
+</html>

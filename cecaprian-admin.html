@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cecaprian ADMIN - Panel de Control</title>
+  <!-- Google Fonts y Font Awesome para íconos -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <div class="nav-bar">
+      <div class="logo-title">
+        <img src="Fotos/Logo 1.png" alt="Logo Cecaprian" />
+        <div>
+          <h1>Cecaprian <span class="admin-badge">ADMIN</span></h1>
+        </div>
+      </div>
+      <nav>
+        <ul>
+          <li class="active"><a href="#">Panel de Control</a></li>
+          <li><a href="#" onclick="cerrarSesion(); return false;" style="color: #ffcccc;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="subheader">Panel administrativo para gestión de contenido y usuarios</div>
+  </header>
+
+  <!-- Gestión de Carpetas/Categorías -->
+  <section>
+    <h2><i class="fas fa-folder"></i> Gestión de Categorías/Temas</h2>
+    <form id="formCarpeta">
+      <label>Nombre de la categoría:</label>
+      <input type="text" id="nombreCarpeta" placeholder="Ej: Introducción Bancaria, Operaciones, Seguridad..." required />
+
+      <label>Descripción (opcional):</label>
+      <textarea id="descCarpeta" rows="2" placeholder="Describe el contenido de esta categoría..."></textarea>
+
+      <div style="text-align: center; padding-top: 8px;">
+        <button type="submit">Crear Categoría</button>
+      </div>
+    </form>
+
+    <div id="listaCarpetas" style="margin-top: 24px;">
+      <!-- Aquí se mostrarán las carpetas creadas -->
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Formulario para subir cápsulas -->
+  <section>
+    <h2><i class="fas fa-video"></i> Subir nueva cápsula</h2>
+    <form id="formCapsula">
+      <label>Categoría:</label>
+      <select id="carpeta" required>
+        <option value="">Selecciona una categoría...</option>
+      </select>
+
+      <label>Unidad:</label>
+      <input type="text" id="unidad" placeholder="Ej: Unidad 1, Módulo A, Tema Básico..." required />
+
+      <label>Título de la cápsula:</label>
+      <input type="text" id="titulo" required />
+
+      <label>Descripción:</label>
+      <textarea id="descripcion" rows="3"></textarea>
+
+      <label>Enlace del video (URL):</label>
+      <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required />
+      <small style="color: #7a9bc4; font-size: 0.9em; display: block; margin-top: 8px; margin-bottom: 15px; line-height: 1.4;">
+        Puedes usar enlaces de YouTube, Vimeo, Google Drive, o cualquier URL directa de video (MP4, WebM, etc.)
+      </small>
+
+      <div style="text-align: center; padding-top: 8px;">
+        <button type="submit">Guardar cápsula</button>
+      </div>
+    </form>
+  </section>
+
+  <hr />
+
+  <!-- Gestión de usuarios -->
+  <section>
+    <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
+    <form id="formUsuario">
+      <label>Nombre de usuario:</label>
+      <input type="text" id="nuevoUsername" required />
+
+      <label>Contraseña:</label>
+      <input type="password" id="nuevoPassword" required />
+
+      <div style="text-align: center; padding-top: 8px;">
+        <button type="submit">Crear Usuario</button>
+      </div>
+    </form>
+
+    <div id="listaUsuarios" style="margin-top: 24px;">
+      <!-- Aquí se mostrarán los usuarios creados -->
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Gestión de Evaluaciones -->
+  <section>
+    <h2><i class="fas fa-clipboard-list"></i> Gestión de Evaluaciones</h2>
+    <form id="formEvaluacion">
+      <label>Título de la evaluación:</label>
+      <input type="text" id="tituloEval" required />
+
+      <label>Descripción:</label>
+      <textarea id="descripcionEval" rows="2"></textarea>
+
+      <label>Preguntas (una por línea, formato: pregunta?opción1,opción2,opción3,respuesta_correcta):</label>
+      <textarea id="preguntasEval" rows="5" placeholder="¿Cuál es la capital de Francia?París,Londres,Berlín,París&#10;¿Cuál es 2+2?3,4,5,4"></textarea>
+      <small style="color: #7a9bc4; font-size: 0.9em; display: block; margin-top: 8px; margin-bottom: 15px; line-height: 1.4;">
+        Ingresa las preguntas con sus opciones separadas por comas. La última opción es la respuesta correcta.
+      </small>
+
+      <div style="text-align: center; padding-top: 8px;">
+        <button type="submit">Crear Evaluación</button>
+      </div>
+    </form>
+
+    <div id="listaEvaluaciones" style="margin-top: 24px;">
+      <!-- Aquí se mostrarán las evaluaciones creadas -->
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Gestión de Documentos -->
+  <section>
+    <h2><i class="fas fa-file-pdf"></i> Gestión de Documentación</h2>
+    <form id="formDocumento">
+      <label>Nombre del documento:</label>
+      <input type="text" id="nombreDoc" placeholder="Ej: Guía de Usuario, Manual Completo..." required />
+
+      <label>Archivo PDF:</label>
+      <input type="file" id="archivoDoc" accept=".pdf" required />
+      <small style="color: #7a9bc4; font-size: 0.9em; display: block; margin-top: 8px; margin-bottom: 15px; line-height: 1.4;">
+        Solo se aceptan archivos PDF. Tamaño máximo: 10 MB.
+      </small>
+
+      <div style="text-align: center; padding-top: 8px;">
+        <button type="submit">Subir Documento</button>
+      </div>
+    </form>
+
+    <div id="listaDocumentos" style="margin-top: 24px;">
+      <!-- Aquí se mostrarán los documentos cargados -->
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Listado de cápsulas para administrador -->
+  <section>
+    <h2><i class="fas fa-list"></i> Cápsulas disponibles</h2>
+    <div id="listaCapsulas">
+      <!-- Aquí se agregan las cápsulas con JS -->
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="rrss">
+      <a href="https://facebook.com/cecaprian" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/cecaprian/#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/message/OGJQJHWXCOODJ1" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian · Panel Administrativo</span>
+  </footer>
+
+  <script>
+    // Verificar sesión de administrador
+    function verificarSesion() {
+      const sesionGuardada = localStorage.getItem('sesion');
+      if (!sesionGuardada) {
+        window.location.href = 'login.html';
+        return false;
+      }
+      
+      try {
+        const sesion = JSON.parse(sesionGuardada);
+        if (sesion.tipo !== 'admin') {
+          // Si no es admin, redirigir al portal de estudiantes
+          window.location.href = 'CECAPRIAN.html';
+          return false;
+        }
+        return true;
+      } catch (e) {
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
+
+    // Cerrar sesión
+    function cerrarSesion() {
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        localStorage.removeItem('sesion');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Verificar sesión al cargar la página
+    if (!verificarSesion()) {
+      // La redirección ya se hizo en verificarSesion
+    }
+
+    const form = document.getElementById('formCapsula');
+    const lista = document.getElementById('listaCapsulas');
+    const formCarpeta = document.getElementById('formCarpeta');
+    const listaCarpetas = document.getElementById('listaCarpetas');
+    const selectCarpeta = document.getElementById('carpeta');
+    const formUsuario = document.getElementById('formUsuario');
+    const listaUsuarios = document.getElementById('listaUsuarios');
+    const formEvaluacion = document.getElementById('formEvaluacion');
+    const listaEvaluaciones = document.getElementById('listaEvaluaciones');
+    const formDocumento = document.getElementById('formDocumento');
+    const listaDocumentos = document.getElementById('listaDocumentos');
+
+    // ========== GESTIÓN DE CARPETAS ==========
+
+    // Cargar carpetas al iniciar
+    function cargarCarpetas() {
+      try {
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        actualizarListaCarpetas();
+        actualizarSelectCarpetas();
+      } catch (error) {
+        console.error('Error al cargar carpetas:', error);
+      }
+    }
+
+    // Actualizar lista visual de carpetas
+    function actualizarListaCarpetas() {
+      try {
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        listaCarpetas.innerHTML = '';
+
+        if (carpetas.length === 0) {
+          listaCarpetas.innerHTML = '<p style="text-align: center; color: #7a9bc4; padding: 20px;">No hay categorías creadas. Crea una para empezar.</p>';
+          return;
+        }
+
+        const container = document.createElement('div');
+        container.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;';
+
+        carpetas.forEach(carpeta => {
+          const div = document.createElement('div');
+          div.className = 'carpeta-item';
+          div.innerHTML = `
+            <div class="carpeta-contenido">
+              <h3><i class="fas fa-folder"></i> ${carpeta.nombre}</h3>
+              <p>${carpeta.descripcion || 'Sin descripción'}</p>
+            </div>
+            <div class="carpeta-botones">
+              <button class="btn-editar-carpeta" onclick="editarCarpeta('${carpeta.id}')" title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-eliminar-carpeta" onclick="eliminarCarpeta('${carpeta.id}')" title="Eliminar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+
+        listaCarpetas.appendChild(container);
+      } catch (error) {
+        console.error('Error al actualizar lista de carpetas:', error);
+      }
+    }
+
+    // Actualizar select de carpetas en el formulario
+    function actualizarSelectCarpetas() {
+      try {
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        selectCarpeta.innerHTML = '<option value="">Selecciona una categoría...</option>';
+        
+        carpetas.forEach(carpeta => {
+          const option = document.createElement('option');
+          option.value = carpeta.id;
+          option.textContent = carpeta.nombre;
+          selectCarpeta.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error al actualizar select de carpetas:', error);
+      }
+    }
+
+    // Crear carpeta
+    function crearCarpeta(nombre, descripcion) {
+      try {
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const id = Date.now().toString();
+        carpetas.push({ id, nombre, descripcion });
+        localStorage.setItem('carpetas', JSON.stringify(carpetas));
+        return id;
+      } catch (error) {
+        console.error('Error al crear carpeta:', error);
+        throw error;
+      }
+    }
+
+    // Editar carpeta
+    function editarCarpeta(carpetaId) {
+      try {
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const carpeta = carpetas.find(c => c.id === carpetaId);
+
+        if (!carpeta) {
+          alert('No se encontró la categoría');
+          return;
+        }
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+        modal.onclick = function(e) {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+          }
+        };
+
+        modal.innerHTML = `
+          <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="position: absolute; top: 15px; right: 15px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px;">
+              <i class="fas fa-times"></i>
+            </button>
+            <h2 style="margin: 0 0 20px 0; color: #1a5796;">Editar Categoría</h2>
+            
+            <form id="formEditarCarpeta" style="display: flex; flex-direction: column; gap: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre:</label>
+                <input type="text" id="editNombreCarpeta" value="${carpeta.nombre}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" />
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descripción:</label>
+                <textarea id="editDescCarpeta" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${carpeta.descripcion || ''}</textarea>
+              </div>
+
+              <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                <button type="submit" style="padding: 10px 20px; background: #1a5796; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
+              </div>
+            </form>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const form = document.getElementById('formEditarCarpeta');
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const nombre = document.getElementById('editNombreCarpeta').value.trim();
+          const descripcion = document.getElementById('editDescCarpeta').value.trim();
+
+          if (!nombre) {
+            alert('Por favor ingresa un nombre para la categoría');
+            return;
+          }
+
+          try {
+            const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+            const indice = carpetas.findIndex(c => c.id === carpetaId);
+
+            if (indice !== -1) {
+              carpetas[indice] = { ...carpetas[indice], nombre, descripcion };
+              localStorage.setItem('carpetas', JSON.stringify(carpetas));
+              modal.remove();
+              actualizarListaCarpetas();
+              actualizarSelectCarpetas();
+              alert('¡Categoría actualizada exitosamente!');
+            }
+          } catch (error) {
+            console.error('Error al guardar cambios:', error);
+            alert('Error al guardar los cambios');
+          }
+        });
+
+      } catch (error) {
+        console.error('Error al editar carpeta:', error);
+        alert('Error al editar la categoría');
+      }
+    }
+
+    // Eliminar carpeta
+    function eliminarCarpeta(carpetaId) {
+      const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+      const capsulasEnCarpeta = capsulas.filter(c => c.carpetaId === carpetaId);
+
+      if (capsulasEnCarpeta.length > 0) {
+        alert(`No puedes eliminar esta categoría porque contiene ${capsulasEnCarpeta.length} cápsula(s). Elimina primero las cápsulas de esta categoría.`);
+        return;
+      }
+
+      if (!confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+        return;
+      }
+
+      try {
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const carpetasFiltradas = carpetas.filter(c => c.id !== carpetaId);
+        localStorage.setItem('carpetas', JSON.stringify(carpetasFiltradas));
+        actualizarListaCarpetas();
+        actualizarSelectCarpetas();
+        alert('Categoría eliminada exitosamente');
+      } catch (error) {
+        console.error('Error al eliminar carpeta:', error);
+        alert('Error al eliminar la categoría');
+      }
+    }
+
+    // Cargar cápsulas guardadas al iniciar
+    function cargarCapsulas() {
+      try {
+        const capsulasGuardadas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        
+        lista.innerHTML = '';
+
+        if (capsulasGuardadas.length === 0) {
+          lista.innerHTML = '<p style="text-align: center; color: #7a9bc4; padding: 20px;">No hay cápsulas disponibles.</p>';
+          return;
+        }
+
+        // Agrupar cápsulas por carpeta
+        const capsulasPorCarpeta = {};
+
+        carpetas.forEach(carpeta => {
+          capsulasPorCarpeta[carpeta.id] = { carpeta, capsulas: [] };
+        });
+
+        // Cápsulas sin carpeta asignada
+        capsulasPorCarpeta['sin-carpeta'] = { carpeta: { id: 'sin-carpeta', nombre: 'Sin categoría' }, capsulas: [] };
+
+        capsulasGuardadas.forEach(capsula => {
+          const url = capsula.videoUrl || capsula.videoData;
+          if (capsula.titulo && url) {
+            if (!capsula.id) {
+              capsula.id = capsula.fecha || Date.now().toString();
+            }
+
+            const carpetaId = capsula.carpetaId || 'sin-carpeta';
+            if (capsulasPorCarpeta[carpetaId]) {
+              capsulasPorCarpeta[carpetaId].capsulas.push(capsula);
+            } else {
+              capsulasPorCarpeta['sin-carpeta'].capsulas.push(capsula);
+            }
+          }
+        });
+
+        // Mostrar carpetas con sus cápsulas
+        carpetas.forEach(carpeta => {
+          if (capsulasPorCarpeta[carpeta.id] && capsulasPorCarpeta[carpeta.id].capsulas.length > 0) {
+            mostrarCarpetaConCapsulas(carpeta, capsulasPorCarpeta[carpeta.id].capsulas);
+          }
+        });
+
+        // Mostrar cápsulas sin carpeta si las hay
+        if (capsulasPorCarpeta['sin-carpeta'].capsulas.length > 0) {
+          mostrarCarpetaConCapsulas(capsulasPorCarpeta['sin-carpeta'].carpeta, capsulasPorCarpeta['sin-carpeta'].capsulas);
+        }
+
+      } catch (error) {
+        console.error('Error al cargar cápsulas:', error);
+      }
+    }
+
+    // Mostrar carpeta con sus cápsulas
+    function mostrarCarpetaConCapsulas(carpeta, capsulas) {
+      const seccionCarpeta = document.createElement('div');
+      seccionCarpeta.className = 'seccion-carpeta';
+      seccionCarpeta.innerHTML = `
+        <div class="encabezado-carpeta">
+          <h3><i class="fas fa-folder-open"></i> ${carpeta.nombre}</h3>
+          <span class="contador-capsulas">${capsulas.length} cápsula${capsulas.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="contenedor-capsulas-carpeta"></div>
+      `;
+
+      const contenedorCapsulas = seccionCarpeta.querySelector('.contenedor-capsulas-carpeta');
+      capsulas.forEach(capsula => {
+        mostrarCapsula(capsula, contenedorCapsulas);
+      });
+
+      lista.appendChild(seccionCarpeta);
+    }
+
+    // Convertir URL de YouTube a formato embebido
+    function convertirYouTubeUrl(url) {
+      if (!url) return null;
+      
+      let videoId = null;
+      url = url.trim();
+      
+      const youtuBeMatch = url.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (youtuBeMatch && youtuBeMatch[1]) {
+        videoId = youtuBeMatch[1];
+      }
+      else {
+        const watchMatch = url.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+        if (watchMatch && watchMatch[1]) {
+          videoId = watchMatch[1];
+        }
+        else {
+          const embedMatch = url.match(/(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+          if (embedMatch && embedMatch[1]) {
+            videoId = embedMatch[1];
+          }
+          else {
+            const vMatch = url.match(/(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/);
+            if (vMatch && vMatch[1]) {
+              videoId = vMatch[1];
+            }
+            else {
+              const paramMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+              if (paramMatch && paramMatch[1]) {
+                videoId = paramMatch[1];
+              }
+            }
+          }
+        }
+      }
+      
+      if (videoId && videoId.length === 11) {
+        return `https://www.youtube.com/embed/${videoId}?hd=1&vq=hd1080&rel=0&modestbranding=1`;
+      }
+      
+      return null;
+    }
+
+    // Convertir URL de Vimeo a formato embebido
+    function convertirVimeoUrl(url) {
+      const regExp = /(?:vimeo)\.com.*(?:videos|video|channels|)\/([\d]+)/i;
+      const match = url.match(regExp);
+      return match ? `https://player.vimeo.com/video/${match[1]}?quality=1080p&autopause=0` : null;
+    }
+
+    // Convertir URL de Google Drive a formato embebido
+    function convertirGoogleDriveUrl(url) {
+      if (!url) return null;
+      
+      let fileId = null;
+      const filePattern1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (filePattern1 && filePattern1[1]) {
+        fileId = filePattern1[1];
+      }
+      else {
+        const filePattern2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (filePattern2 && filePattern2[1]) {
+          fileId = filePattern2[1];
+        }
+      }
+      
+      if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+      
+      return null;
+    }
+
+    // Obtener thumbnail de YouTube
+    function obtenerYouTubeThumbnail(videoId) {
+      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+
+    // Mostrar una cápsula en miniatura
+    function mostrarCapsula(capsula, contenedor = null) {
+      const div = document.createElement('div');
+      div.className = 'capsula';
+      
+      const url = capsula.videoData || capsula.videoUrl;
+      const capsulaId = capsula.id || capsula.fecha || Date.now().toString();
+      
+      let miniaturaHtml = '';
+      let videoEmbedUrl = '';
+      
+      const tituloEscapado = (capsula.titulo || 'Sin título').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const descripcionEscapada = (capsula.descripcion || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      
+      const youtubeEmbed = convertirYouTubeUrl(url);
+      if (youtubeEmbed) {
+        const videoIdMatch = youtubeEmbed.match(/embed\/([a-zA-Z0-9_-]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        if (videoId) {
+          videoEmbedUrl = youtubeEmbed;
+          videoLink = `https://www.youtube.com/watch?v=${videoId}`;
+          miniaturaHtml = `<img src="${obtenerYouTubeThumbnail(videoId)}" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'">`;
+        }
+      }
+      else if (convertirVimeoUrl(url)) {
+        const vimeoEmbed = convertirVimeoUrl(url);
+        videoEmbedUrl = vimeoEmbed;
+        videoLink = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;"><i class="fab fa-vimeo"></i></div>`;
+      }
+      else if (convertirGoogleDriveUrl(url)) {
+        const driveEmbed = convertirGoogleDriveUrl(url);
+        videoEmbedUrl = driveEmbed;
+        videoLink = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;"><i class="fab fa-google-drive"></i></div>`;
+      }
+      else {
+        videoEmbedUrl = url;
+        videoLink = url;
+        miniaturaHtml = `<div style="background: linear-gradient(135deg, #1a5796 0%, #21a2df 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;"><i class="fas fa-video"></i></div>`;
+      }
+      
+      div.innerHTML = `
+        <div class="botones-capsula">
+          <button class="btn-editar" onclick="event.stopPropagation(); editarCapsula('${capsulaId}')" title="Editar cápsula">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-eliminar" onclick="event.stopPropagation(); eliminarCapsula('${capsulaId}')" title="Eliminar cápsula">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="capsula-miniatura" onclick="verVideoCompleto('${capsulaId}', '${videoEmbedUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${tituloEscapado}', '${descripcionEscapada}')">
+          ${miniaturaHtml}
+          <div class="play-overlay">
+            <i class="fas fa-play"></i>
+          </div>
+        </div>
+        <div class="capsula-info">
+          <h3>${capsula.titulo || 'Sin título'}</h3>
+          <p>${capsula.descripcion || ''}</p>
+        </div>
+      `;
+      div.setAttribute('data-capsula-id', capsulaId);
+      
+      if (contenedor) {
+        contenedor.appendChild(div);
+      } else {
+        lista.prepend(div);
+      }
+    }
+
+    // Guardar cápsula en localStorage
+    function guardarCapsula(carpetaId, unidad, titulo, descripcion, videoUrl) {
+      try {
+        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const id = Date.now().toString();
+        capsulas.unshift({ id, carpetaId, unidad, titulo, descripcion, videoUrl, fecha: new Date().toISOString() });
+        localStorage.setItem('capsulas', JSON.stringify(capsulas));
+        return id;
+      } catch (error) {
+        if (error.name === 'QuotaExceededError') {
+          throw new Error('No hay suficiente espacio. Por favor elimina algunas cápsulas.');
+        }
+        throw error;
+      }
+    }
+
+    // Eliminar cápsula
+    function eliminarCapsula(capsulaId) {
+      if (!confirm('¿Estás seguro de que quieres eliminar esta cápsula?')) {
+        return;
+      }
+      
+      try {
+        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const capsulasFiltradas = capsulas.filter(c => {
+          const id = c.id || c.fecha;
+          return id !== capsulaId;
+        });
+        localStorage.setItem('capsulas', JSON.stringify(capsulasFiltradas));
+        
+        const elemento = document.querySelector(`[data-capsula-id="${capsulaId}"]`);
+        if (elemento) {
+          elemento.style.transition = 'opacity 0.3s, transform 0.3s';
+          elemento.style.opacity = '0';
+          elemento.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            elemento.remove();
+            if (lista.children.length === 0) {
+              lista.innerHTML = '<p style="text-align: center; color: #7a9bc4; padding: 20px;">No hay cápsulas disponibles.</p>';
+            }
+          }, 300);
+        }
+      } catch (error) {
+        console.error('Error al eliminar cápsula:', error);
+        alert('Error al eliminar la cápsula');
+      }
+    }
+
+    // Editar cápsula
+    function editarCapsula(capsulaId) {
+      try {
+        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const capsula = capsulas.find(c => {
+          const id = c.id || c.fecha;
+          return id === capsulaId;
+        });
+
+        if (!capsula) {
+          alert('No se encontró la cápsula');
+          return;
+        }
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+        modal.onclick = function(e) {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+          }
+        };
+
+        modal.innerHTML = `
+          <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="position: absolute; top: 15px; right: 15px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px; z-index: 10;">
+              <i class="fas fa-times"></i>
+            </button>
+            <h2 style="margin: 0 0 20px 0; color: #1a5796; font-size: 1.8em;"><i class="fas fa-edit"></i> Editar cápsula</h2>
+            
+            <form id="formEditarCapsula" style="display: flex; flex-direction: column; gap: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Unidad:</label>
+                <input type="text" id="editUnidad" value="${capsula.unidad || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Título de la cápsula:</label>
+                <input type="text" id="editTitulo" value="${capsula.titulo || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Descripción:</label>
+                <textarea id="editDescripcion" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; font-family: inherit;">${capsula.descripcion || ''}</textarea>
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Enlace del video (URL):</label>
+                <input type="url" id="editVideoUrl" value="${capsula.videoUrl || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
+              </div>
+
+              <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cancelar</button>
+                <button type="submit" style="padding: 10px 20px; background: #1a5796; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Guardar cambios</button>
+              </div>
+            </form>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const form = document.getElementById('formEditarCapsula');
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const unidad = document.getElementById('editUnidad').value.trim();
+          const titulo = document.getElementById('editTitulo').value.trim();
+          const descripcion = document.getElementById('editDescripcion').value.trim();
+          const videoUrl = document.getElementById('editVideoUrl').value.trim();
+
+          if (!unidad) {
+            alert('Por favor especifica la unidad');
+            return;
+          }
+
+          if (!videoUrl) {
+            alert('Por favor ingresa un enlace de video');
+            return;
+          }
+
+          try {
+            new URL(videoUrl);
+          } catch (error) {
+            alert('Por favor ingresa una URL válida');
+            return;
+          }
+
+          try {
+            const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+            const indice = capsulas.findIndex(c => {
+              const id = c.id || c.fecha;
+              return id === capsulaId;
+            });
+
+            if (indice !== -1) {
+              capsulas[indice] = { ...capsulas[indice], unidad, titulo, descripcion, videoUrl };
+              localStorage.setItem('capsulas', JSON.stringify(capsulas));
+
+              // Actualizar en la UI
+              const elemento = document.querySelector(`[data-capsula-id="${capsulaId}"]`);
+              if (elemento) {
+                elemento.remove();
+              }
+              mostrarCapsula(capsulas[indice]);
+
+              modal.remove();
+              alert('¡Cápsula actualizada exitosamente!');
+            }
+          } catch (error) {
+            console.error('Error al guardar cambios:', error);
+            alert('Error al guardar los cambios: ' + error.message);
+          }
+        });
+
+      } catch (error) {
+        console.error('Error al editar cápsula:', error);
+        alert('Error al editar la cápsula');
+      }
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const carpetaId = document.getElementById('carpeta').value;
+      const unidad = document.getElementById('unidad').value.trim();
+      const titulo = document.getElementById('titulo').value;
+      const descripcion = document.getElementById('descripcion').value;
+      const videoUrl = document.getElementById('videoUrl').value.trim();
+
+      if (!carpetaId) {
+        alert('Por favor selecciona una categoría');
+        return;
+      }
+
+      if (!unidad) {
+        alert('Por favor especifica la unidad');
+        return;
+      }
+
+      if (!videoUrl) {
+        alert('Por favor ingresa un enlace de video');
+        return;
+      }
+
+      try {
+        new URL(videoUrl);
+      } catch (error) {
+        alert('Por favor ingresa una URL válida (ejemplo: https://www.youtube.com/watch?v=...)');
+        return;
+      }
+
+      const boton = form.querySelector('button[type="submit"]');
+      const textoOriginal = boton.textContent;
+      boton.textContent = 'Guardando...';
+      boton.disabled = true;
+
+      try {
+        const id = guardarCapsula(carpetaId, unidad, titulo, descripcion, videoUrl);
+        
+        cargarCapsulas();
+        form.reset();
+        
+        boton.textContent = textoOriginal;
+        boton.disabled = false;
+        
+        alert('¡Cápsula guardada exitosamente!');
+      } catch (error) {
+        console.error('Error al guardar:', error);
+        alert('Error al guardar la cápsula: ' + error.message);
+        boton.textContent = textoOriginal;
+        boton.disabled = false;
+      }
+    });
+
+    // Event listener para el formulario de carpetas
+    formCarpeta.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nombre = document.getElementById('nombreCarpeta').value.trim();
+      const descripcion = document.getElementById('descCarpeta').value.trim();
+
+      if (!nombre) {
+        alert('Por favor ingresa un nombre para la categoría');
+        return;
+      }
+
+      try {
+        crearCarpeta(nombre, descripcion);
+        formCarpeta.reset();
+        actualizarListaCarpetas();
+        actualizarSelectCarpetas();
+        alert('¡Categoría creada exitosamente!');
+      } catch (error) {
+        console.error('Error al crear carpeta:', error);
+        alert('Error al crear la categoría: ' + error.message);
+      }
+    });
+
+    cargarCarpetas();
+    cargarCapsulas();
+
+    // Modal para ver video completo
+    function verVideoCompleto(capsulaId, videoUrl, titulo, descripcion) {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+      modal.onclick = function(e) {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      };
+
+      let videoHtml = '';
+      if (videoUrl.includes('youtube.com/embed')) {
+        videoHtml = `<iframe width="100%" height="500" src="${videoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else if (videoUrl.includes('vimeo.com')) {
+        videoHtml = `<iframe width="100%" height="500" src="${videoUrl}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else if (videoUrl.includes('drive.google.com')) {
+        videoHtml = `<iframe width="100%" height="500" src="${videoUrl}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius: 8px;"></iframe>`;
+      } else {
+        videoHtml = `<video src="${videoUrl}" controls autoplay style="width: 100%; max-height: 500px; border-radius: 8px;"></video>`;
+      }
+
+      modal.innerHTML = `
+        <div style="background: #fff; border-radius: 12px; padding: 20px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+          <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; z-index: 10;">
+            <i class="fas fa-times"></i>
+          </button>
+          <h2 style="margin: 0 0 10px 0; color: #1a5796; font-size: 1.5em;">${titulo}</h2>
+          <p style="margin: 0 0 15px 0; color: #2a4276;">${descripcion || ''}</p>
+          ${videoHtml}
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    // ========== GESTIÓN DE EVALUACIONES ==========
+
+    function cargarEvaluaciones() {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      listaEvaluaciones.innerHTML = '';
+
+      if (evaluaciones.length === 0) {
+        listaEvaluaciones.innerHTML = `
+          <div class="sin-evaluaciones">
+            <i class="fas fa-clipboard-list"></i>
+            <p>No hay evaluaciones creadas todavía.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tabla = document.createElement('table');
+      tabla.className = 'tabla-evaluaciones';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Evaluación</th>
+          <th>Preguntas</th>
+          <th>Fecha de Creación</th>
+          <th style="text-align: center;">Acciones</th>
+        </tr>
+      `;
+      tabla.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      evaluaciones.forEach((eval, index) => {
+        const tr = document.createElement('tr');
+        const fecha = new Date(eval.fecha);
+        const fechaFormato = fecha.toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        tr.innerHTML = `
+          <td>
+            <div class="eval-titulo">${eval.titulo}</div>
+            <div style="color: #7a9bc4; font-size: 0.9em;">${eval.descripcion || ''}</div>
+          </td>
+          <td>
+            <div class="eval-preguntas">${eval.preguntas.length} preguntas</div>
+          </td>
+          <td style="color: #7a9bc4; font-size: 0.9em;">
+            ${fechaFormato}
+          </td>
+          <td style="text-align: center;">
+            <div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
+              <button class="btn-accion btn-editar" onclick="verResultadosEvaluacion(${index})" title="Ver resultados" style="background: #6c757d;">
+                <i class="fas fa-chart-bar"></i>
+              </button>
+              <button class="btn-accion btn-editar" onclick="verEvaluacion(${index})" title="Ver evaluación">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn-accion btn-editar" onclick="editarEvaluacion(${index})" title="Editar evaluación">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-accion btn-eliminar-usuario" onclick="eliminarEvaluacion(${index})" title="Eliminar evaluación">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tabla.appendChild(tbody);
+      listaEvaluaciones.appendChild(tabla);
+    }
+
+    formEvaluacion.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const titulo = document.getElementById('tituloEval').value.trim();
+      const descripcion = document.getElementById('descripcionEval').value.trim();
+      const preguntasText = document.getElementById('preguntasEval').value.trim();
+
+      if (!titulo || !preguntasText) {
+        alert('Por favor completa título y preguntas');
+        return;
+      }
+
+      const preguntas = [];
+      const lineas = preguntasText.split('\n').filter(l => l.trim());
+      
+      lineas.forEach(linea => {
+        const partes = linea.split('?');
+        if (partes.length === 2) {
+          const pregunta = partes[0].trim();
+          const opciones = partes[1].split(',').map(o => o.trim());
+          
+          if (opciones.length >= 2) {
+            const respuestaCorrecta = opciones[opciones.length - 1];
+            preguntas.push({
+              pregunta: pregunta,
+              opciones: opciones,
+              respuestaCorrecta: respuestaCorrecta
+            });
+          }
+        }
+      });
+
+      if (preguntas.length === 0) {
+        alert('No se pudieron parsear las preguntas. Verifica el formato.');
+        return;
+      }
+
+      const evaluacion = {
+        id: Date.now().toString(),
+        titulo: titulo,
+        descripcion: descripcion,
+        preguntas: preguntas,
+        fecha: new Date().toISOString()
+      };
+
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      evaluaciones.push(evaluacion);
+      localStorage.setItem('evaluaciones', JSON.stringify(evaluaciones));
+
+      formEvaluacion.reset();
+      cargarEvaluaciones();
+      alert(`Evaluación "${titulo}" creada exitosamente con ${preguntas.length} preguntas.`);
+    });
+
+    function verResultadosEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      const eval = evaluaciones[index];
+
+      if (!eval) return;
+
+      const respuestasDelEval = respuestasEvaluaciones.filter(r => r.evaluacionId === eval.id);
+
+      let contenidoHtml = '';
+      if (respuestasDelEval.length === 0) {
+        contenidoHtml = `
+          <div style="text-align: center; padding: 30px; color: #7a9bc4;">
+            <i class="fas fa-inbox" style="font-size: 2.5em; margin-bottom: 15px; color: #b6d6f6; display: block;"></i>
+            <p>Aún no hay respuestas en esta evaluación.</p>
+          </div>
+        `;
+      } else {
+        const usuariosMap = {};
+        respuestasDelEval.forEach(respuesta => {
+          if (!usuariosMap[respuesta.usuarioId]) {
+            usuariosMap[respuesta.usuarioId] = [];
+          }
+          usuariosMap[respuesta.usuarioId].push(respuesta);
+        });
+
+        let tablasHTML = '';
+        Object.keys(usuariosMap).forEach(usuarioId => {
+          const respuestasDelUsuario = usuariosMap[usuarioId];
+          const mejorIntento = respuestasDelUsuario.reduce((best, current) => 
+            current.porcentaje > best.porcentaje ? current : best
+          );
+
+          const aprobado = mejorIntento.porcentaje >= 80;
+          const estiloAprobacion = aprobado ? 'background: #d4edda; border-left: 4px solid #28a745;' : 'background: #f8d7da; border-left: 4px solid #dc3545;';
+          const iconoAprobacion = aprobado ? '<i class="fas fa-check-circle" style="color: #28a745;"></i>' : '<i class="fas fa-times-circle" style="color: #dc3545;"></i>';
+
+          tablasHTML += `
+            <div style="margin-bottom: 20px; padding: 15px; ${estiloAprobacion} border-radius: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div>
+                  <h4 style="margin: 0 0 5px 0; color: #1a5796;">${iconoAprobacion} ${usuarioId}</h4>
+                  <p style="margin: 0; font-size: 0.9em; color: #666;">
+                    Mejor resultado: ${mejorIntento.aciertos}/${mejorIntento.total} (${mejorIntento.porcentaje}%)
+                  </p>
+                  <p style="margin: 0; font-size: 0.85em; color: #999;">
+                    Intentos realizados: ${respuestasDelUsuario.length}/3
+                  </p>
+                </div>
+                <button class="btn-accion btn-editar" onclick="resetearIntentosEvaluacion('${usuarioId}', '${eval.id}'); verResultadosEvaluacion(${index});" title="Resetear intentos" style="background: #ff9800; padding: 8px 12px;">
+                  <i class="fas fa-redo"></i> Resetear
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        contenidoHtml = tablasHTML;
+      }
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modal-resultados-eval';
+
+      modal.innerHTML = `
+        <div class="modal-contenido" style="max-width: 800px;">
+          <button type="button" class="modal-close" onclick="document.getElementById('modal-resultados-eval').remove()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h3 class="modal-titulo">
+            <i class="fas fa-chart-bar"></i> Resultados - ${eval.titulo}
+          </h3>
+          
+          <div style="max-height: 500px; overflow-y: auto;">
+            ${contenidoHtml}
+          </div>
+
+          <div style="margin-top: 20px; text-align: right;">
+            <button type="button" class="btn-cancelar" onclick="document.getElementById('modal-resultados-eval').remove()" style="padding: 10px 24px;">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function resetearIntentosEvaluacion(usuarioId, evaluacionId) {
+      if (!confirm(`¿Estás seguro de resetear los intentos de ${usuarioId} en esta evaluación?`)) {
+        return;
+      }
+
+      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+      const respuestasFiltradas = respuestasEvaluaciones.filter(r => 
+        !(r.usuarioId === usuarioId && r.evaluacionId === evaluacionId)
+      );
+      localStorage.setItem('respuestasEvaluaciones', JSON.stringify(respuestasFiltradas));
+      
+      alert(`Intentos reseteados para ${usuarioId}.`);
+    }
+
+    function verEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+
+      if (!eval) return;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modal-ver-eval';
+
+      let preguntasHtml = '';
+      eval.preguntas.forEach((preg, pIndex) => {
+        preguntasHtml += `
+          <div style="background: #f2f8fc; border-left: 4px solid #1a5796; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px 0; font-weight: 600; color: #1a5796;"><strong>Pregunta ${pIndex + 1}:</strong> ${preg.pregunta}</p>
+            <div style="margin-left: 10px;">
+        `;
+        preg.opciones.forEach((opcion) => {
+          const esCorrecta = opcion === preg.respuestaCorrecta;
+          const estiloOpcion = esCorrecta ? 'background: #d4edda; border-left: 3px solid #28a745;' : '';
+          const icono = esCorrecta ? '<i class="fas fa-check" style="color: #28a745; margin-right: 8px;"></i>' : '<i class="fas fa-times" style="color: #999; margin-right: 8px; opacity: 0.5;"></i>';
+          preguntasHtml += `
+            <div style="padding: 8px 10px; margin-bottom: 8px; border-radius: 4px; ${estiloOpcion}">
+              ${icono}<span style="${esCorrecta ? 'color: #155724; font-weight: 600;' : 'color: #666;'}">${opcion}</span>
+            </div>
+          `;
+        });
+        preguntasHtml += `
+            </div>
+          </div>
+        `;
+      });
+
+      modal.innerHTML = `
+        <div class="modal-contenido" style="max-width: 700px;">
+          <button type="button" class="modal-close" onclick="document.getElementById('modal-ver-eval').remove()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h3 class="modal-titulo">
+            <i class="fas fa-eye"></i> Visualizar Evaluación
+          </h3>
+          
+          <div style="margin-bottom: 20px;">
+            <h4 style="margin: 0 0 8px 0; color: #1a5796;">${eval.titulo}</h4>
+            <p style="margin: 0; color: #7a9bc4; font-size: 0.9em;">${eval.descripcion || 'Sin descripción'}</p>
+            <p style="margin: 8px 0 0 0; color: #999; font-size: 0.85em;">Total de preguntas: <strong>${eval.preguntas.length}</strong></p>
+          </div>
+
+          <hr style="border: 0; height: 1px; background: #e0efff; margin: 15px 0;">
+
+          <div style="max-height: 400px; overflow-y: auto;">
+            ${preguntasHtml}
+          </div>
+
+          <div style="margin-top: 20px; text-align: right;">
+            <button type="button" class="btn-cancelar" onclick="document.getElementById('modal-ver-eval').remove()" style="padding: 10px 24px;">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function editarEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+
+      if (!eval) return;
+
+      let preguntasFormato = '';
+      eval.preguntas.forEach(preg => {
+        const opcionesStr = preg.opciones.join(',');
+        preguntasFormato += `${preg.pregunta}?${opcionesStr}\n`;
+      });
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modal-editar-eval';
+
+      modal.innerHTML = `
+        <div class="modal-contenido" style="max-width: 700px;">
+          <button type="button" class="modal-close" onclick="document.getElementById('modal-editar-eval').remove()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h3 class="modal-titulo">
+            <i class="fas fa-edit"></i> Editar Evaluación
+          </h3>
+          
+          <div class="modal-form-group">
+            <label>Título de la evaluación:</label>
+            <input type="text" id="editTituloEval" value="${eval.titulo.replace(/"/g, '&quot;')}" required>
+          </div>
+
+          <div class="modal-form-group">
+            <label>Descripción:</label>
+            <textarea id="editDescripcionEval" rows="2" style="resize: vertical;">${eval.descripcion || ''}</textarea>
+          </div>
+
+          <div class="modal-form-group">
+            <label>Preguntas:</label>
+            <textarea id="editPreguntasEval" rows="6" style="resize: vertical; font-family: monospace; font-size: 0.9em;">${preguntasFormato.trim()}</textarea>
+          </div>
+
+          <div class="modal-botones">
+            <button type="button" class="btn-cancelar" onclick="document.getElementById('modal-editar-eval').remove()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-guardar" onclick="guardarEdicionEvaluacion(${index})">
+              <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      document.getElementById('editTituloEval').focus();
+    }
+
+    function guardarEdicionEvaluacion(index) {
+      const titulo = document.getElementById('editTituloEval').value.trim();
+      const descripcion = document.getElementById('editDescripcionEval').value.trim();
+      const preguntasText = document.getElementById('editPreguntasEval').value.trim();
+
+      if (!titulo || !preguntasText) {
+        alert('Por favor completa título y preguntas');
+        return;
+      }
+
+      const preguntas = [];
+      const lineas = preguntasText.split('\n').filter(l => l.trim());
+      
+      lineas.forEach(linea => {
+        const partes = linea.split('?');
+        if (partes.length === 2) {
+          const pregunta = partes[0].trim();
+          const opciones = partes[1].split(',').map(o => o.trim());
+          
+          if (opciones.length >= 2) {
+            const respuestaCorrecta = opciones[opciones.length - 1];
+            preguntas.push({
+              pregunta: pregunta,
+              opciones: opciones,
+              respuestaCorrecta: respuestaCorrecta
+            });
+          }
+        }
+      });
+
+      if (preguntas.length === 0) {
+        alert('No se pudieron parsear las preguntas. Verifica el formato.');
+        return;
+      }
+
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      evaluaciones[index].titulo = titulo;
+      evaluaciones[index].descripcion = descripcion;
+      evaluaciones[index].preguntas = preguntas;
+      localStorage.setItem('evaluaciones', JSON.stringify(evaluaciones));
+
+      document.getElementById('modal-editar-eval').remove();
+      cargarEvaluaciones();
+      alert(`Evaluación "${titulo}" actualizada exitosamente con ${preguntas.length} preguntas.`);
+    }
+
+    function eliminarEvaluacion(index) {
+      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+      const eval = evaluaciones[index];
+
+      if (!confirm(`¿Estás seguro de eliminar la evaluación "${eval.titulo}"?`)) {
+        return;
+      }
+
+      evaluaciones.splice(index, 1);
+      localStorage.setItem('evaluaciones', JSON.stringify(evaluaciones));
+      cargarEvaluaciones();
+    }
+
+    cargarEvaluaciones();
+
+    // ========== GESTIÓN DE DOCUMENTACIÓN ==========
+
+    function cargarDocumentos() {
+      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+      listaDocumentos.innerHTML = '';
+
+      if (documentos.length === 0) {
+        listaDocumentos.innerHTML = `
+          <div style="text-align: center; padding: 30px; color: #7a9bc4;">
+            <i class="fas fa-file-pdf" style="font-size: 2.5em; margin-bottom: 15px; color: #b6d6f6; display: block;"></i>
+            <p>No hay documentos cargados todavía.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tabla = document.createElement('table');
+      tabla.className = 'tabla-usuarios';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Nombre del Documento</th>
+          <th>Tamaño</th>
+          <th>Fecha de Carga</th>
+          <th style="text-align: center;">Acciones</th>
+        </tr>
+      `;
+      tabla.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      documentos.forEach((doc, index) => {
+        const tr = document.createElement('tr');
+        const fecha = new Date(doc.fecha);
+        const fechaFormato = fecha.toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        tr.innerHTML = `
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-file-pdf" style="color: #dc3545; font-size: 1.2em;"></i>
+              <span>${doc.nombre}</span>
+            </div>
+          </td>
+          <td>${doc.tamanio}</td>
+          <td>${fechaFormato}</td>
+          <td style="text-align: center;">
+            <button class="btn-accion btn-descargar" onclick="descargarDocumento(${index})" title="Descargar">
+              <i class="fas fa-download"></i>
+            </button>
+            <button class="btn-accion btn-eliminar-usuario" onclick="eliminarDocumento(${index})" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tabla.appendChild(tbody);
+      listaDocumentos.appendChild(tabla);
+    }
+
+    function descargarDocumento(index) {
+      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+      const doc = documentos[index];
+
+      if (!doc) return;
+
+      try {
+        const link = document.createElement('a');
+        link.href = doc.contenido;
+        link.download = doc.nombre + '.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error al descargar documento:', error);
+        alert('Error al descargar el documento.');
+      }
+    }
+
+    function eliminarDocumento(index) {
+      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+      const doc = documentos[index];
+
+      if (!confirm(`¿Estás seguro de eliminar el documento "${doc.nombre}"?`)) {
+        return;
+      }
+
+      documentos.splice(index, 1);
+      localStorage.setItem('documentos', JSON.stringify(documentos));
+      cargarDocumentos();
+      alert('Documento eliminado exitosamente.');
+    }
+
+    formDocumento.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nombreDoc = document.getElementById('nombreDoc').value.trim();
+      const archivoDoc = document.getElementById('archivoDoc').files[0];
+
+      if (!nombreDoc) {
+        alert('Por favor ingresa un nombre para el documento');
+        return;
+      }
+
+      if (!archivoDoc) {
+        alert('Por favor selecciona un archivo PDF');
+        return;
+      }
+
+      if (archivoDoc.type !== 'application/pdf') {
+        alert('Solo se aceptan archivos PDF');
+        return;
+      }
+
+      const maxSize = 10 * 1024 * 1024;
+      if (archivoDoc.size > maxSize) {
+        alert('El archivo excede el tamaño máximo de 10 MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const contenidoBase64 = event.target.result;
+          
+          let tamanioFormato;
+          if (archivoDoc.size < 1024 * 1024) {
+            tamanioFormato = (archivoDoc.size / 1024).toFixed(2) + ' KB';
+          } else {
+            tamanioFormato = (archivoDoc.size / (1024 * 1024)).toFixed(2) + ' MB';
+          }
+
+          const documento = {
+            id: Date.now().toString(),
+            nombre: nombreDoc,
+            contenido: contenidoBase64,
+            tamanio: tamanioFormato,
+            tipo: 'application/pdf',
+            fecha: new Date().toISOString()
+          };
+
+          const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+          documentos.push(documento);
+          localStorage.setItem('documentos', JSON.stringify(documentos));
+
+          formDocumento.reset();
+          cargarDocumentos();
+          alert(`Documento "${nombreDoc}" subido exitosamente.`);
+        } catch (error) {
+          console.error('Error al procesar documento:', error);
+          alert('Error al procesar el documento.');
+        }
+      };
+
+      reader.onerror = function() {
+        alert('Error al leer el archivo.');
+      };
+
+      reader.readAsDataURL(archivoDoc);
+    });
+
+    cargarDocumentos();
+
+    // ========== GESTIÓN DE USUARIOS ==========
+    
+    function cargarUsuarios() {
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      listaUsuarios.innerHTML = '';
+
+      if (usuarios.length === 0) {
+        listaUsuarios.innerHTML = `
+          <div class="sin-usuarios">
+            <i class="fas fa-users"></i>
+            <p>No hay usuarios creados todavía.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tabla = document.createElement('table');
+      tabla.className = 'tabla-usuarios';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Usuario</th>
+          <th>Contraseña</th>
+          <th>Fecha de Creación</th>
+          <th style="text-align: center;">Acciones</th>
+        </tr>
+      `;
+      tabla.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      usuarios.forEach((usuario, index) => {
+        const tr = document.createElement('tr');
+        const fecha = new Date(usuario.fecha);
+        const fechaFormato = fecha.toLocaleDateString('es-ES', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        tr.innerHTML = `
+          <td>
+            <div class="usuario-username">
+              <div class="usuario-icon">
+                <i class="fas fa-user"></i>
+              </div>
+              <span>${usuario.username}</span>
+            </div>
+          </td>
+          <td>
+            <span id="pass-${index}" style="color: #7a9bc4; font-family: monospace;">••••••••</span>
+          </td>
+          <td>
+            <div class="usuario-fecha">
+              ${fechaFormato}
+            </div>
+          </td>
+          <td style="text-align: center;">
+            <div class="acciones-usuario">
+              <button class="btn-accion btn-copiar" onclick="copiarCredenciales('${usuario.username.replace(/'/g, "\\'")}', '${usuario.password.replace(/'/g, "\\'")}', ${index})" title="Copiar credenciales">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button class="btn-accion btn-editar" onclick="abrirModalEditar(${index})" title="Editar usuario">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-accion btn-eliminar-usuario" onclick="eliminarUsuario(${index})" title="Eliminar usuario">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tabla.appendChild(tbody);
+      listaUsuarios.appendChild(tabla);
+    }
+
+    function abrirModalEditar(index) {
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const usuario = usuarios[index];
+
+      if (!usuario) return;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modal-editar';
+
+      modal.innerHTML = `
+        <div class="modal-contenido">
+          <button type="button" class="modal-close" onclick="document.getElementById('modal-editar').remove()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h3 class="modal-titulo">
+            <i class="fas fa-user-edit"></i> Editar Usuario
+          </h3>
+          
+          <div class="modal-form-group">
+            <label>Nombre de usuario:</label>
+            <input type="text" value="${usuario.username}" disabled style="background: #e8e8e8; color: #999;">
+          </div>
+
+          <div class="modal-form-group">
+            <label>Nueva contraseña:</label>
+            <div class="password-container">
+              <input type="password" id="nuevoPass" placeholder="Ingresa la nueva contraseña" value="${usuario.password}">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('nuevoPass')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-form-group">
+            <label>Confirmar contraseña:</label>
+            <div class="password-container">
+              <input type="password" id="confirmarPass" placeholder="Confirma la nueva contraseña" value="${usuario.password}">
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmarPass')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-botones">
+            <button type="button" class="btn-cancelar" onclick="document.getElementById('modal-editar').remove()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-guardar" onclick="guardarEdicionUsuario(${index})">
+              <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      document.getElementById('nuevoPass').focus();
+    }
+
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      const button = event.target.closest('.password-toggle');
+      const icon = button.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    function guardarEdicionUsuario(index) {
+      const nuevoPass = document.getElementById('nuevoPass').value;
+      const confirmarPass = document.getElementById('confirmarPass').value;
+
+      if (!nuevoPass) {
+        alert('Por favor ingresa una contraseña');
+        return;
+      }
+
+      if (nuevoPass !== confirmarPass) {
+        alert('Las contraseñas no coinciden');
+        return;
+      }
+
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      usuarios[index].password = nuevoPass;
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+
+      document.getElementById('modal-editar').remove();
+      cargarUsuarios();
+      alert('Usuario actualizado exitosamente.');
+    }
+
+    function copiarCredenciales(username, password, index) {
+      const texto = `Usuario: ${username}\nContraseña: ${password}`;
+      navigator.clipboard.writeText(texto).then(() => {
+        const btn = event.target.closest('.btn-copiar');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+        setTimeout(() => {
+          btn.innerHTML = textoOriginal;
+        }, 2000);
+      }).catch(() => {
+        alert('No se pudo copiar las credenciales');
+      });
+    }
+
+    formUsuario.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('nuevoUsername').value.trim();
+      const password = document.getElementById('nuevoPassword').value;
+
+      if (!username || !password) {
+        alert('Por favor completa todos los campos');
+        return;
+      }
+
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      if (usuarios.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+        alert('Este nombre de usuario ya existe. Por favor elige otro.');
+        return;
+      }
+
+      const nuevoUsuario = {
+        username: username,
+        password: password,
+        fecha: new Date().toISOString()
+      };
+
+      usuarios.push(nuevoUsuario);
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+
+      formUsuario.reset();
+
+      cargarUsuarios();
+
+      alert(`Usuario "${username}" creado exitosamente.`);
+    });
+
+    function eliminarUsuario(index) {
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const usuario = usuarios[index];
+
+      if (!confirm(`¿Estás seguro de que quieres eliminar el usuario "${usuario.username}"?`)) {
+        return;
+      }
+
+      usuarios.splice(index, 1);
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      cargarUsuarios();
+      alert(`Usuario "${usuario.username}" eliminado exitosamente.`);
+    }
+
+    cargarUsuarios();
+  </script>
+</body>
+</html>
