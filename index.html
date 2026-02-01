@@ -148,5 +148,44 @@
       }
     }
   </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // 2. Configuración de Supabase
+    const SUPABASE_URL = 'https://ovzogjfodcbhhpaduhsx.supabase.co';
+    const SUPABASE_KEY = 'sb_secret_DHNv70vsC2DfnPn64Ek-Xg_2WRke2ym'; // Asegúrate de poner tu llave real
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userInput = document.getElementById('username').value;
+        const passInput = document.getElementById('password').value;
+
+        // 3. Consultar en la tabla 'usuarios' de Supabase
+        const { data: usuarios, error } = await _supabase
+            .from('usuarios')
+            .select('*')
+            .eq('nombre', userInput)
+            .eq('password', passInput) // Nota: En producción se recomienda usar Auth de Supabase, no texto plano
+            .single();
+
+        if (error || !usuarios) {
+            alert('Usuario o contraseña incorrectos');
+            console.error('Error de login:', error);
+        } else {
+            // 4. Guardar sesión temporal (opcional, para saber quién entró)
+            localStorage.setItem('usuarioLogueado', JSON.stringify(usuarios));
+            
+            // Redirección según el tipo de usuario o a la página general
+            // Si tienes una columna "rol" en tu tabla, podrías usarla aquí
+            alert('¡Bienvenido ' + usuarios.nombre + '!');
+            window.location.href = 'capsulas-alumno.html'; 
+        }
+    });
+</script> 
 </body>
 </html>

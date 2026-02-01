@@ -1749,66 +1749,73 @@
     cargarUsuarios();
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
   const SUPABASE_URL = 'https://ovzogjfodcbhhpaduhsx.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_KO3_49qLCvGfO9uaTsnu4w_zQToP2Mh';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_KEY = 'sb_publishable_KO3_49qLCvGfO9uaTsnu4w_zQToP2Mh'; // Usa tu llave real
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const formSupabase = document.getElementById('formUsuario');
+  const formUsuarioReal = document.getElementById('formUsuario');
+  const listaUsuariosDiv = document.getElementById('listaUsuarios');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+  // Función para obtener y mostrar
+  async function obtenerUsuarios() {
+    const { data: usuarios, error } = await _supabase
+        .from('usuarios')
+        .select('*');
 
+    if (error) {
+        console.error('Error:', error.message);
+        return;
+    }
+
+    // Generar tabla para mantener el estilo original
+    let html = `
+      <table class="tabla-usuarios">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Contraseña</th>
+            <th>Fecha de Creación</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    
+    usuarios.forEach(user => {
+        html += `
+            <tr>
+                <td><div class="usuario-username"><span>${user.nombre}</span></div></td>
+                <td>••••••••</td>
+                <td><div class="usuario-fecha">${new Date(user.fecha_creacion || user.created_at).toLocaleString()}</div></td>
+            </tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    listaUsuariosDiv.innerHTML = html;
+  }
+
+  // Manejar el envío del formulario
+  formUsuarioReal.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const username = document.getElementById('nuevoUsername').value;
     const password = document.getElementById('nuevoPassword').value;
 
-    // Enviar a la base de datos real
-    const { data, error } = await supabase
+    const { error } = await _supabase
       .from('usuarios') 
       .insert([{ nombre: username, password: password }]);
 
     if (error) {
       alert('Error al guardar: ' + error.message);
     } else {
-      alert('¡Usuario "' + username + '" guardado en la nube!');
-      formSupabase.reset();
-      obtenerUsuarios(); // Llamada a la función para actualizar la tabla visualmente
-    // Limpia los cuadritos del formulario
-   // Aquí podrías llamar a una función para actualizar la tabla visualmente
+      alert('¡Usuario guardado en Supabase!');
+      formUsuarioReal.reset();
+      obtenerUsuarios(); 
     }
   });
-</script>
-fa-save
-<script>
-async function obtenerUsuarios() {
-    const listaUsuarios = document.getElementById('listaUsuarios'); // El div o tabla de tu imagen
-    
-    // Consultar los datos a Supabase
-    const { data: usuarios, error } = await supabase
-        .from('usuarios')
-        .select('*');
 
-    if (error) {
-        console.error('Error al obtener usuarios:', error.message);
-        return;
-    }
-
-    // Limpiar contenido previo y generar el nuevo HTML
-    listaUsuarios.innerHTML = ''; 
-    usuarios.forEach(user => {
-        listaUsuarios.innerHTML += `
-            <div class="usuario-row">
-                <span>${user.nombre}</span>
-                <span>********</span>
-                <span>${new Date(user.fecha_creacion).toLocaleString()}</span>
-            </div>
-        `;
-    });
-}
-
-// Llamar a la función apenas cargue la página
-window.onload = obtenerUsuarios;
+  // Cargar al iniciar
+  window.addEventListener('load', obtenerUsuarios);
 </script>
 </body>
 </html>
