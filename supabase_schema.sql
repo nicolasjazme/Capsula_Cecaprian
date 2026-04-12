@@ -1,5 +1,6 @@
 -- Ejecutar en Supabase → SQL Editor (una vez).
--- Tabla usuarios: se asume que ya existe con al menos columnas nombre, password.
+-- Tabla public.usuarios: debe tener PK en columna "usuarios" (texto), más nombre, password, fecha_creacion.
+-- El cliente inserta: usuarios, nombre (mismo login), password, fecha_creacion.
 -- Si falta fecha_creacion, añádela:
 
 alter table public.usuarios add column if not exists fecha_creacion timestamptz default now();

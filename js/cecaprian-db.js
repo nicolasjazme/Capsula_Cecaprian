@@ -260,35 +260,74 @@
       var res = await getClient().from('usuarios').select('*');
       if (res.error) throw res.error;
       return (res.data || []).map(function (u) {
+        var login = u.usuarios != null && u.usuarios !== '' ? u.usuarios : u.nombre;
         return {
-          id: u.id,
-          username: u.nombre,
+          id: u.usuarios != null && u.usuarios !== '' ? u.usuarios : u.id,
+          username: login,
           password: u.password,
           fecha: u.fecha_creacion || u.created_at || new Date().toISOString()
         };
       });
     },
 
+    /**
+     * Tabla public.usuarios en Supabase: PK = columna "usuarios" (texto), más nombre, password, fecha_creacion.
+     */
     insertUsuario: async function (username, password) {
-      var row = { nombre: username, password: password };
+      var now = new Date().toISOString();
+      var row = {
+        usuarios: username,
+        nombre: username,
+        password: password,
+        fecha_creacion: now
+      };
       var res = await getClient().from('usuarios').insert(row);
       if (res.error) throw res.error;
     },
 
     updateUsuarioPassword: async function (username, password) {
-      var res = await getClient().from('usuarios').update({ password: password }).eq('nombre', username);
+      var res = await getClient()
+        .from('usuarios')
+        .update({ password: password })
+        .eq('usuarios', username)
+        .select();
       if (res.error) throw res.error;
+      if (!res.data || res.data.length === 0) {
+        res = await getClient()
+          .from('usuarios')
+          .update({ password: password })
+          .eq('nombre', username)
+          .select();
+        if (res.error) throw res.error;
+      }
     },
 
     deleteUsuarioByUsername: async function (username) {
-      var res = await getClient().from('usuarios').delete().eq('nombre', username);
+      var res = await getClient().from('usuarios').delete().eq('usuarios', username).select();
       if (res.error) throw res.error;
+      if (!res.data || res.data.length === 0) {
+        res = await getClient().from('usuarios').delete().eq('nombre', username).select();
+        if (res.error) throw res.error;
+      }
     },
 
     loginUsuario: async function (username, password) {
-      var res = await getClient().from('usuarios').select('*').eq('nombre', username).eq('password', password).maybeSingle();
+      var res = await getClient()
+        .from('usuarios')
+        .select('*')
+        .eq('usuarios', username)
+        .eq('password', password)
+        .maybeSingle();
       if (res.error) throw res.error;
-      return res.data;
+      if (res.data) return res.data;
+      var res2 = await getClient()
+        .from('usuarios')
+        .select('*')
+        .eq('nombre', username)
+        .eq('password', password)
+        .maybeSingle();
+      if (res2.error) throw res2.error;
+      return res2.data;
     }
   };
 })(typeof window !== 'undefined' ? window : globalThis);
