@@ -173,33 +173,27 @@
     <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian · Panel Administrativo</span>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/cecaprian-db.js"></script>
   <script>
     // Verificar sesión de administrador
     function verificarSesion() {
-      const sesionGuardada = localStorage.getItem('sesion');
-      if (!sesionGuardada) {
+      const sesion = CecaprianDB.getSesion();
+      if (!sesion) {
         window.location.href = 'index.html';
         return false;
       }
-      
-      try {
-        const sesion = JSON.parse(sesionGuardada);
-        if (sesion.tipo !== 'admin') {
-          // Si no es admin, redirigir al portal de estudiantes
-          window.location.href = 'CECAPRIAN.html';
-          return false;
-        }
-        return true;
-      } catch (e) {
-        window.location.href = 'index.html';
+      if (sesion.tipo !== 'admin') {
+        window.location.href = 'CECAPRIAN.html';
         return false;
       }
+      return true;
     }
 
     // Cerrar sesión
     function cerrarSesion() {
       if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        localStorage.removeItem('sesion');
+        CecaprianDB.clearSesion();
         window.location.href = 'index.html';
       }
     }
@@ -223,21 +217,18 @@
 
     // ========== GESTIÓN DE CARPETAS ==========
 
-    // Cargar carpetas al iniciar
-    function cargarCarpetas() {
+    async function cargarCarpetas() {
       try {
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
-        actualizarListaCarpetas();
-        actualizarSelectCarpetas();
+        await actualizarListaCarpetas();
+        await actualizarSelectCarpetas();
       } catch (error) {
-        console.error('Error al cargar carpetas:', error);
+        console.error('Error al cargar categorías:', error);
       }
     }
 
-    // Actualizar lista visual de carpetas
-    function actualizarListaCarpetas() {
+    async function actualizarListaCarpetas() {
       try {
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const carpetas = await CecaprianDB.getCarpetas();
         listaCarpetas.innerHTML = '';
 
         if (carpetas.length === 0) {
@@ -274,10 +265,9 @@
       }
     }
 
-    // Actualizar select de carpetas en el formulario
-    function actualizarSelectCarpetas() {
+    async function actualizarSelectCarpetas() {
       try {
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const carpetas = await CecaprianDB.getCarpetas();
         selectCarpeta.innerHTML = '<option value="">Selecciona una categoría...</option>';
         
         carpetas.forEach(carpeta => {
@@ -291,106 +281,90 @@
       }
     }
 
-    // Crear carpeta
-    function crearCarpeta(nombre, descripcion) {
-      try {
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
-        const id = Date.now().toString();
-        carpetas.push({ id, nombre, descripcion });
-        localStorage.setItem('carpetas', JSON.stringify(carpetas));
-        return id;
-      } catch (error) {
-        console.error('Error al crear carpeta:', error);
-        throw error;
-      }
+    async function crearCarpeta(nombre, descripcion) {
+      return await CecaprianDB.insertCarpeta(nombre, descripcion);
     }
 
-    // Editar carpeta
     function editarCarpeta(carpetaId) {
-      try {
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
-        const carpeta = carpetas.find(c => c.id === carpetaId);
+      (async () => {
+        try {
+          const carpetas = await CecaprianDB.getCarpetas();
+          const carpeta = carpetas.find(c => c.id === carpetaId);
 
-        if (!carpeta) {
-          alert('No se encontró la categoría');
-          return;
-        }
-
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
-        modal.onclick = function(e) {
-          if (e.target === modal) {
-            document.body.removeChild(modal);
-          }
-        };
-
-        modal.innerHTML = `
-          <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-            <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="position: absolute; top: 15px; right: 15px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px;">
-              <i class="fas fa-times"></i>
-            </button>
-            <h2 style="margin: 0 0 20px 0; color: #1a5796;">Editar Categoría</h2>
-            
-            <form id="formEditarCarpeta" style="display: flex; flex-direction: column; gap: 15px;">
-              <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre:</label>
-                <input type="text" id="editNombreCarpeta" value="${carpeta.nombre}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" />
-              </div>
-
-              <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descripción:</label>
-                <textarea id="editDescCarpeta" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${carpeta.descripcion || ''}</textarea>
-              </div>
-
-              <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button type="button" onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                <button type="submit" style="padding: 10px 20px; background: #1a5796; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
-              </div>
-            </form>
-          </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        const form = document.getElementById('formEditarCarpeta');
-        form.addEventListener('submit', function(e) {
-          e.preventDefault();
-
-          const nombre = document.getElementById('editNombreCarpeta').value.trim();
-          const descripcion = document.getElementById('editDescCarpeta').value.trim();
-
-          if (!nombre) {
-            alert('Por favor ingresa un nombre para la categoría');
+          if (!carpeta) {
+            alert('No se encontró la categoría');
             return;
           }
 
-          try {
-            const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
-            const indice = carpetas.findIndex(c => c.id === carpetaId);
-
-            if (indice !== -1) {
-              carpetas[indice] = { ...carpetas[indice], nombre, descripcion };
-              localStorage.setItem('carpetas', JSON.stringify(carpetas));
-              modal.remove();
-              actualizarListaCarpetas();
-              actualizarSelectCarpetas();
-              alert('¡Categoría actualizada exitosamente!');
+          const modal = document.createElement('div');
+          modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+          modal.onclick = function(e) {
+            if (e.target === modal) {
+              document.body.removeChild(modal);
             }
-          } catch (error) {
-            console.error('Error al guardar cambios:', error);
-            alert('Error al guardar los cambios');
-          }
-        });
+          };
 
-      } catch (error) {
-        console.error('Error al editar carpeta:', error);
-        alert('Error al editar la categoría');
-      }
+          modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+              <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="position: absolute; top: 15px; right: 15px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px;">
+                <i class="fas fa-times"></i>
+              </button>
+              <h2 style="margin: 0 0 20px 0; color: #1a5796;">Editar Categoría</h2>
+              
+              <form id="formEditarCarpeta" style="display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre:</label>
+                  <input type="text" id="editNombreCarpeta" value="${carpeta.nombre}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" />
+                </div>
+
+                <div>
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descripción:</label>
+                  <textarea id="editDescCarpeta" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${carpeta.descripcion || ''}</textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                  <button type="button" onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                  <button type="submit" style="padding: 10px 20px; background: #1a5796; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
+                </div>
+              </form>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          const form = document.getElementById('formEditarCarpeta');
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const nombre = document.getElementById('editNombreCarpeta').value.trim();
+            const descripcion = document.getElementById('editDescCarpeta').value.trim();
+
+            if (!nombre) {
+              alert('Por favor ingresa un nombre para la categoría');
+              return;
+            }
+
+            try {
+              await CecaprianDB.updateCarpeta(carpetaId, nombre, descripcion);
+              modal.remove();
+              await actualizarListaCarpetas();
+              await actualizarSelectCarpetas();
+              alert('¡Categoría actualizada exitosamente!');
+            } catch (error) {
+              console.error('Error al guardar cambios:', error);
+              alert('Error al guardar los cambios');
+            }
+          });
+
+        } catch (error) {
+          console.error('Error al editar carpeta:', error);
+          alert('Error al editar la categoría');
+        }
+      })();
     }
 
-    // Eliminar carpeta
-    function eliminarCarpeta(carpetaId) {
-      const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+    async function eliminarCarpeta(carpetaId) {
+      const capsulas = await CecaprianDB.getCapsulas();
       const capsulasEnCarpeta = capsulas.filter(c => c.carpetaId === carpetaId);
 
       if (capsulasEnCarpeta.length > 0) {
@@ -403,11 +377,9 @@
       }
 
       try {
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
-        const carpetasFiltradas = carpetas.filter(c => c.id !== carpetaId);
-        localStorage.setItem('carpetas', JSON.stringify(carpetasFiltradas));
-        actualizarListaCarpetas();
-        actualizarSelectCarpetas();
+        await CecaprianDB.deleteCarpeta(carpetaId);
+        await actualizarListaCarpetas();
+        await actualizarSelectCarpetas();
         alert('Categoría eliminada exitosamente');
       } catch (error) {
         console.error('Error al eliminar carpeta:', error);
@@ -415,11 +387,11 @@
       }
     }
 
-    // Cargar cápsulas guardadas al iniciar
-    function cargarCapsulas() {
+    // Cargar cápsulas desde Supabase
+    async function cargarCapsulas() {
       try {
-        const capsulasGuardadas = JSON.parse(localStorage.getItem('capsulas') || '[]');
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const capsulasGuardadas = await CecaprianDB.getCapsulas();
+        const carpetas = await CecaprianDB.getCarpetas();
         
         lista.innerHTML = '';
 
@@ -428,14 +400,12 @@
           return;
         }
 
-        // Agrupar cápsulas por carpeta
         const capsulasPorCarpeta = {};
 
         carpetas.forEach(carpeta => {
           capsulasPorCarpeta[carpeta.id] = { carpeta, capsulas: [] };
         });
 
-        // Cápsulas sin carpeta asignada
         capsulasPorCarpeta['sin-carpeta'] = { carpeta: { id: 'sin-carpeta', nombre: 'Sin categoría' }, capsulas: [] };
 
         capsulasGuardadas.forEach(capsula => {
@@ -454,14 +424,12 @@
           }
         });
 
-        // Mostrar carpetas con sus cápsulas
         carpetas.forEach(carpeta => {
           if (capsulasPorCarpeta[carpeta.id] && capsulasPorCarpeta[carpeta.id].capsulas.length > 0) {
             mostrarCarpetaConCapsulas(carpeta, capsulasPorCarpeta[carpeta.id].capsulas);
           }
         });
 
-        // Mostrar cápsulas sin carpeta si las hay
         if (capsulasPorCarpeta['sin-carpeta'].capsulas.length > 0) {
           mostrarCarpetaConCapsulas(capsulasPorCarpeta['sin-carpeta'].carpeta, capsulasPorCarpeta['sin-carpeta'].capsulas);
         }
@@ -640,35 +608,17 @@
       }
     }
 
-    // Guardar cápsula en localStorage
-    function guardarCapsula(carpetaId, unidad, titulo, descripcion, videoUrl) {
-      try {
-        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
-        const id = Date.now().toString();
-        capsulas.unshift({ id, carpetaId, unidad, titulo, descripcion, videoUrl, fecha: new Date().toISOString() });
-        localStorage.setItem('capsulas', JSON.stringify(capsulas));
-        return id;
-      } catch (error) {
-        if (error.name === 'QuotaExceededError') {
-          throw new Error('No hay suficiente espacio. Por favor elimina algunas cápsulas.');
-        }
-        throw error;
-      }
+    async function guardarCapsula(carpetaId, unidad, titulo, descripcion, videoUrl) {
+      return await CecaprianDB.insertCapsula(carpetaId, unidad, titulo, descripcion, videoUrl);
     }
 
-    // Eliminar cápsula
-    function eliminarCapsula(capsulaId) {
+    async function eliminarCapsula(capsulaId) {
       if (!confirm('¿Estás seguro de que quieres eliminar esta cápsula?')) {
         return;
       }
       
       try {
-        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
-        const capsulasFiltradas = capsulas.filter(c => {
-          const id = c.id || c.fecha;
-          return id !== capsulaId;
-        });
-        localStorage.setItem('capsulas', JSON.stringify(capsulasFiltradas));
+        await CecaprianDB.deleteCapsula(capsulaId);
         
         const elemento = document.querySelector(`[data-capsula-id="${capsulaId}"]`);
         if (elemento) {
@@ -688,10 +638,10 @@
       }
     }
 
-    // Editar cápsula
     function editarCapsula(capsulaId) {
+      (async () => {
       try {
-        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const capsulas = await CecaprianDB.getCapsulas();
         const capsula = capsulas.find(c => {
           const id = c.id || c.fecha;
           return id === capsulaId;
@@ -749,7 +699,7 @@
         document.body.appendChild(modal);
 
         const form = document.getElementById('formEditarCapsula');
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
           e.preventDefault();
 
           const unidad = document.getElementById('editUnidad').value.trim();
@@ -775,26 +725,10 @@
           }
 
           try {
-            const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
-            const indice = capsulas.findIndex(c => {
-              const id = c.id || c.fecha;
-              return id === capsulaId;
-            });
-
-            if (indice !== -1) {
-              capsulas[indice] = { ...capsulas[indice], unidad, titulo, descripcion, videoUrl };
-              localStorage.setItem('capsulas', JSON.stringify(capsulas));
-
-              // Actualizar en la UI
-              const elemento = document.querySelector(`[data-capsula-id="${capsulaId}"]`);
-              if (elemento) {
-                elemento.remove();
-              }
-              mostrarCapsula(capsulas[indice]);
-
-              modal.remove();
-              alert('¡Cápsula actualizada exitosamente!');
-            }
+            await CecaprianDB.updateCapsula(capsulaId, { unidad, titulo, descripcion, videoUrl });
+            modal.remove();
+            await cargarCapsulas();
+            alert('¡Cápsula actualizada exitosamente!');
           } catch (error) {
             console.error('Error al guardar cambios:', error);
             alert('Error al guardar los cambios: ' + error.message);
@@ -805,9 +739,10 @@
         console.error('Error al editar cápsula:', error);
         alert('Error al editar la cápsula');
       }
+      })();
     }
 
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
 
       const carpetaId = document.getElementById('carpeta').value;
@@ -844,9 +779,9 @@
       boton.disabled = true;
 
       try {
-        const id = guardarCapsula(carpetaId, unidad, titulo, descripcion, videoUrl);
+        await guardarCapsula(carpetaId, unidad, titulo, descripcion, videoUrl);
         
-        cargarCapsulas();
+        await cargarCapsulas();
         form.reset();
         
         boton.textContent = textoOriginal;
@@ -862,7 +797,7 @@
     });
 
     // Event listener para el formulario de carpetas
-    formCarpeta.addEventListener('submit', function(e) {
+    formCarpeta.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const nombre = document.getElementById('nombreCarpeta').value.trim();
@@ -874,10 +809,10 @@
       }
 
       try {
-        crearCarpeta(nombre, descripcion);
+        await crearCarpeta(nombre, descripcion);
         formCarpeta.reset();
-        actualizarListaCarpetas();
-        actualizarSelectCarpetas();
+        await actualizarListaCarpetas();
+        await actualizarSelectCarpetas();
         alert('¡Categoría creada exitosamente!');
       } catch (error) {
         console.error('Error al crear carpeta:', error);
@@ -925,8 +860,15 @@
 
     // ========== GESTIÓN DE EVALUACIONES ==========
 
-    function cargarEvaluaciones() {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function cargarEvaluaciones() {
+      let evaluaciones;
+      try {
+        evaluaciones = await CecaprianDB.getEvaluaciones();
+      } catch (err) {
+        console.error(err);
+        listaEvaluaciones.innerHTML = '<p style="color:#c0392b;">No se pudieron cargar las evaluaciones.</p>';
+        return;
+      }
       listaEvaluaciones.innerHTML = '';
 
       if (evaluaciones.length === 0) {
@@ -1000,7 +942,7 @@
       listaEvaluaciones.appendChild(tabla);
     }
 
-    formEvaluacion.addEventListener('submit', function(e) {
+    formEvaluacion.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const titulo = document.getElementById('tituloEval').value.trim();
@@ -1045,18 +987,20 @@
         fecha: new Date().toISOString()
       };
 
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
-      evaluaciones.push(evaluacion);
-      localStorage.setItem('evaluaciones', JSON.stringify(evaluaciones));
-
-      formEvaluacion.reset();
-      cargarEvaluaciones();
-      alert(`Evaluación "${titulo}" creada exitosamente con ${preguntas.length} preguntas.`);
+      try {
+        await CecaprianDB.insertEvaluacion(evaluacion);
+        formEvaluacion.reset();
+        await cargarEvaluaciones();
+        alert(`Evaluación "${titulo}" creada exitosamente con ${preguntas.length} preguntas.`);
+      } catch (err) {
+        console.error(err);
+        alert('Error al guardar la evaluación: ' + err.message);
+      }
     });
 
-    function verResultadosEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+    async function verResultadosEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
+      const respuestasEvaluaciones = await CecaprianDB.getRespuestasEvaluaciones();
       const eval = evaluaciones[index];
 
       if (!eval) return;
@@ -1103,7 +1047,7 @@
                     Intentos realizados: ${respuestasDelUsuario.length}/3
                   </p>
                 </div>
-                <button class="btn-accion btn-editar" onclick="resetearIntentosEvaluacion('${usuarioId}', '${eval.id}'); verResultadosEvaluacion(${index});" title="Resetear intentos" style="background: #ff9800; padding: 8px 12px;">
+                <button class="btn-accion btn-editar" onclick="resetearIntentosEvaluacion('${usuarioId.replace(/'/g, "\\'")}', '${eval.id}', ${index})" title="Resetear intentos" style="background: #ff9800; padding: 8px 12px;">
                   <i class="fas fa-redo"></i> Resetear
                 </button>
               </div>
@@ -1142,22 +1086,25 @@
       document.body.appendChild(modal);
     }
 
-    function resetearIntentosEvaluacion(usuarioId, evaluacionId) {
+    async function resetearIntentosEvaluacion(usuarioId, evaluacionId, index) {
       if (!confirm(`¿Estás seguro de resetear los intentos de ${usuarioId} en esta evaluación?`)) {
         return;
       }
 
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
-      const respuestasFiltradas = respuestasEvaluaciones.filter(r => 
-        !(r.usuarioId === usuarioId && r.evaluacionId === evaluacionId)
-      );
-      localStorage.setItem('respuestasEvaluaciones', JSON.stringify(respuestasFiltradas));
-      
-      alert(`Intentos reseteados para ${usuarioId}.`);
+      try {
+        await CecaprianDB.deleteRespuestasUsuarioEvaluacion(usuarioId, evaluacionId);
+        alert(`Intentos reseteados para ${usuarioId}.`);
+        const _mr = document.getElementById('modal-resultados-eval');
+        if (_mr) _mr.remove();
+        await verResultadosEvaluacion(index);
+      } catch (err) {
+        console.error(err);
+        alert('Error al resetear intentos: ' + err.message);
+      }
     }
 
-    function verEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function verEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
 
       if (!eval) return;
@@ -1221,8 +1168,8 @@
       document.body.appendChild(modal);
     }
 
-    function editarEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function editarEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
 
       if (!eval) return;
@@ -1276,7 +1223,7 @@
       document.getElementById('editTituloEval').focus();
     }
 
-    function guardarEdicionEvaluacion(index) {
+    async function guardarEdicionEvaluacion(index) {
       const titulo = document.getElementById('editTituloEval').value.trim();
       const descripcion = document.getElementById('editDescripcionEval').value.trim();
       const preguntasText = document.getElementById('editPreguntasEval').value.trim();
@@ -1311,36 +1258,51 @@
         return;
       }
 
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
-      evaluaciones[index].titulo = titulo;
-      evaluaciones[index].descripcion = descripcion;
-      evaluaciones[index].preguntas = preguntas;
-      localStorage.setItem('evaluaciones', JSON.stringify(evaluaciones));
+      try {
+        const evaluaciones = await CecaprianDB.getEvaluaciones();
+        const ev = evaluaciones[index];
+        if (!ev) return;
+        await CecaprianDB.updateEvaluacion(ev.id, { titulo, descripcion, preguntas });
 
-      document.getElementById('modal-editar-eval').remove();
-      cargarEvaluaciones();
-      alert(`Evaluación "${titulo}" actualizada exitosamente con ${preguntas.length} preguntas.`);
+        document.getElementById('modal-editar-eval').remove();
+        await cargarEvaluaciones();
+        alert(`Evaluación "${titulo}" actualizada exitosamente con ${preguntas.length} preguntas.`);
+      } catch (err) {
+        console.error(err);
+        alert('Error al actualizar: ' + err.message);
+      }
     }
 
-    function eliminarEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function eliminarEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
 
       if (!confirm(`¿Estás seguro de eliminar la evaluación "${eval.titulo}"?`)) {
         return;
       }
 
-      evaluaciones.splice(index, 1);
-      localStorage.setItem('evaluaciones', JSON.stringify(evaluaciones));
-      cargarEvaluaciones();
+      try {
+        await CecaprianDB.deleteEvaluacion(eval.id);
+        await cargarEvaluaciones();
+      } catch (err) {
+        console.error(err);
+        alert('Error al eliminar: ' + err.message);
+      }
     }
 
     cargarEvaluaciones();
 
     // ========== GESTIÓN DE DOCUMENTACIÓN ==========
 
-    function cargarDocumentos() {
-      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+    async function cargarDocumentos() {
+      let documentos;
+      try {
+        documentos = await CecaprianDB.getDocumentos();
+      } catch (err) {
+        console.error(err);
+        listaDocumentos.innerHTML = '<p style="color:#c0392b;">Error al cargar documentos.</p>';
+        return;
+      }
       listaDocumentos.innerHTML = '';
 
       if (documentos.length === 0) {
@@ -1389,10 +1351,10 @@
           <td>${doc.tamanio}</td>
           <td>${fechaFormato}</td>
           <td style="text-align: center;">
-            <button class="btn-accion btn-descargar" onclick="descargarDocumento(${index})" title="Descargar">
+            <button class="btn-accion btn-descargar" onclick="descargarDocumento('${doc.id}')" title="Descargar">
               <i class="fas fa-download"></i>
             </button>
-            <button class="btn-accion btn-eliminar-usuario" onclick="eliminarDocumento(${index})" title="Eliminar">
+            <button class="btn-accion btn-eliminar-usuario" onclick="eliminarDocumento('${doc.id}')" title="Eliminar">
               <i class="fas fa-trash"></i>
             </button>
           </td>
@@ -1404,10 +1366,9 @@
       listaDocumentos.appendChild(tabla);
     }
 
-    function descargarDocumento(index) {
-      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
-      const doc = documentos[index];
-
+    async function descargarDocumento(docId) {
+      const documentos = await CecaprianDB.getDocumentos();
+      const doc = documentos.find(d => d.id === docId);
       if (!doc) return;
 
       try {
@@ -1423,18 +1384,23 @@
       }
     }
 
-    function eliminarDocumento(index) {
-      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
-      const doc = documentos[index];
+    async function eliminarDocumento(docId) {
+      const documentos = await CecaprianDB.getDocumentos();
+      const doc = documentos.find(d => d.id === docId);
+      if (!doc) return;
 
       if (!confirm(`¿Estás seguro de eliminar el documento "${doc.nombre}"?`)) {
         return;
       }
 
-      documentos.splice(index, 1);
-      localStorage.setItem('documentos', JSON.stringify(documentos));
-      cargarDocumentos();
-      alert('Documento eliminado exitosamente.');
+      try {
+        await CecaprianDB.deleteDocumento(docId);
+        await cargarDocumentos();
+        alert('Documento eliminado exitosamente.');
+      } catch (err) {
+        console.error(err);
+        alert('Error al eliminar: ' + err.message);
+      }
     }
 
     formDocumento.addEventListener('submit', function(e) {
@@ -1485,13 +1451,15 @@
             fecha: new Date().toISOString()
           };
 
-          const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
-          documentos.push(documento);
-          localStorage.setItem('documentos', JSON.stringify(documentos));
-
-          formDocumento.reset();
-          cargarDocumentos();
-          alert(`Documento "${nombreDoc}" subido exitosamente.`);
+          CecaprianDB.insertDocumento(documento).then(function () {
+            formDocumento.reset();
+            return cargarDocumentos();
+          }).then(function () {
+            alert(`Documento "${nombreDoc}" subido exitosamente.`);
+          }).catch(function (error) {
+            console.error('Error al procesar documento:', error);
+            alert('Error al guardar en el servidor: ' + error.message);
+          });
         } catch (error) {
           console.error('Error al procesar documento:', error);
           alert('Error al procesar el documento.');
@@ -1509,8 +1477,15 @@
 
     // ========== GESTIÓN DE USUARIOS ==========
     
-    function cargarUsuarios() {
-      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    async function cargarUsuarios() {
+      let usuarios;
+      try {
+        usuarios = await CecaprianDB.getUsuarios();
+      } catch (err) {
+        console.error(err);
+        listaUsuarios.innerHTML = '<p style="color:#c0392b;">Error al cargar usuarios.</p>';
+        return;
+      }
       listaUsuarios.innerHTML = '';
 
       if (usuarios.length === 0) {
@@ -1540,7 +1515,7 @@
       const tbody = document.createElement('tbody');
       usuarios.forEach((usuario, index) => {
         const tr = document.createElement('tr');
-        const fecha = new Date(usuario.fecha);
+        const fecha = new Date(usuario.fecha || Date.now());
         const fechaFormato = fecha.toLocaleDateString('es-ES', { 
           year: 'numeric', 
           month: 'long', 
@@ -1587,8 +1562,8 @@
       listaUsuarios.appendChild(tabla);
     }
 
-    function abrirModalEditar(index) {
-      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    async function abrirModalEditar(index) {
+      const usuarios = await CecaprianDB.getUsuarios();
       const usuario = usuarios[index];
 
       if (!usuario) return;
@@ -1662,7 +1637,7 @@
       }
     }
 
-    function guardarEdicionUsuario(index) {
+    async function guardarEdicionUsuario(index) {
       const nuevoPass = document.getElementById('nuevoPass').value;
       const confirmarPass = document.getElementById('confirmarPass').value;
 
@@ -1676,13 +1651,19 @@
         return;
       }
 
-      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-      usuarios[index].password = nuevoPass;
-      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      try {
+        const usuarios = await CecaprianDB.getUsuarios();
+        const usuario = usuarios[index];
+        if (!usuario) return;
+        await CecaprianDB.updateUsuarioPassword(usuario.username, nuevoPass);
 
-      document.getElementById('modal-editar').remove();
-      cargarUsuarios();
-      alert('Usuario actualizado exitosamente.');
+        document.getElementById('modal-editar').remove();
+        await cargarUsuarios();
+        alert('Usuario actualizado exitosamente.');
+      } catch (err) {
+        console.error(err);
+        alert('Error al actualizar: ' + err.message);
+      }
     }
 
     function copiarCredenciales(username, password, index) {
@@ -1699,7 +1680,7 @@
       });
     }
 
-    formUsuario.addEventListener('submit', function(e) {
+    formUsuario.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const username = document.getElementById('nuevoUsername').value.trim();
@@ -1710,112 +1691,42 @@
         return;
       }
 
-      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-      if (usuarios.find(u => u.username.toLowerCase() === username.toLowerCase())) {
-        alert('Este nombre de usuario ya existe. Por favor elige otro.');
-        return;
+      try {
+        const usuarios = await CecaprianDB.getUsuarios();
+        if (usuarios.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+          alert('Este nombre de usuario ya existe. Por favor elige otro.');
+          return;
+        }
+
+        await CecaprianDB.insertUsuario(username, password);
+        formUsuario.reset();
+        await cargarUsuarios();
+        alert(`Usuario "${username}" creado exitosamente.`);
+      } catch (err) {
+        console.error(err);
+        alert('Error al crear usuario: ' + err.message);
       }
-
-      const nuevoUsuario = {
-        username: username,
-        password: password,
-        fecha: new Date().toISOString()
-      };
-
-      usuarios.push(nuevoUsuario);
-      localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-      formUsuario.reset();
-
-      cargarUsuarios();
-
-      alert(`Usuario "${username}" creado exitosamente.`);
     });
 
-    function eliminarUsuario(index) {
-      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    async function eliminarUsuario(index) {
+      const usuarios = await CecaprianDB.getUsuarios();
       const usuario = usuarios[index];
 
       if (!confirm(`¿Estás seguro de que quieres eliminar el usuario "${usuario.username}"?`)) {
         return;
       }
 
-      usuarios.splice(index, 1);
-      localStorage.setItem('usuarios', JSON.stringify(usuarios));
-      cargarUsuarios();
-      alert(`Usuario "${usuario.username}" eliminado exitosamente.`);
+      try {
+        await CecaprianDB.deleteUsuarioByUsername(usuario.username);
+        await cargarUsuarios();
+        alert(`Usuario "${usuario.username}" eliminado exitosamente.`);
+      } catch (err) {
+        console.error(err);
+        alert('Error al eliminar: ' + err.message);
+      }
     }
 
     cargarUsuarios();
   </script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-  const SUPABASE_URL = 'https://ovzogjfodcbhhpaduhsx.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_KO3_49qLCvGfO9uaTsnu4w_zQToP2Mh'; // Usa tu llave real
-  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const formUsuarioReal = document.getElementById('formUsuario');
-  const listaUsuariosDiv = document.getElementById('listaUsuarios');
-
-  // Función para obtener y mostrar
-  async function obtenerUsuarios() {
-    const { data: usuarios, error } = await _supabase
-        .from('usuarios')
-        .select('*');
-
-    if (error) {
-        console.error('Error:', error.message);
-        return;
-    }
-
-    // Generar tabla para mantener el estilo original
-    let html = `
-      <table class="tabla-usuarios">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Contraseña</th>
-            <th>Fecha de Creación</th>
-          </tr>
-        </thead>
-        <tbody>`;
-    
-    usuarios.forEach(user => {
-        html += `
-            <tr>
-                <td><div class="usuario-username"><span>${user.nombre}</span></div></td>
-                <td>••••••••</td>
-                <td><div class="usuario-fecha">${new Date(user.fecha_creacion || user.created_at).toLocaleString()}</div></td>
-            </tr>`;
-    });
-    
-    html += `</tbody></table>`;
-    listaUsuariosDiv.innerHTML = html;
-  }
-
-  // Manejar el envío del formulario
-  formUsuarioReal.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('nuevoUsername').value;
-    const password = document.getElementById('nuevoPassword').value;
-
-    const { error } = await _supabase
-      .from('usuarios') 
-      .insert([{ nombre: username, password: password }]);
-
-    if (error) {
-      alert('Error al guardar: ' + error.message);
-    } else {
-      alert('¡Usuario guardado en Supabase!');
-      formUsuarioReal.reset();
-      obtenerUsuarios(); 
-    }
-  });
-
-  // Cargar al iniciar
-  window.addEventListener('load', obtenerUsuarios);
-</script>
 </body>
 </html>

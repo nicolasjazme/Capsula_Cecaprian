@@ -43,32 +43,27 @@
     <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian · Portal de Cápsulas</span>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/cecaprian-db.js"></script>
   <script>
     // Verificar sesión de usuario
     function verificarSesion() {
-      const sesionGuardada = localStorage.getItem('sesion');
-      if (!sesionGuardada) {
+      const sesion = CecaprianDB.getSesion();
+      if (!sesion) {
         window.location.href = 'index.html';
         return false;
       }
-      
-      try {
-        const sesion = JSON.parse(sesionGuardada);
-        if (sesion.tipo === 'admin') {
-          window.location.href = 'cecaprian-admin.html';
-          return false;
-        }
-        return true;
-      } catch (e) {
-        window.location.href = 'index.html';
+      if (sesion.tipo === 'admin') {
+        window.location.href = 'cecaprian-admin.html';
         return false;
       }
+      return true;
     }
 
     // Cerrar sesión
     function cerrarSesion() {
       if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        localStorage.removeItem('sesion');
+        CecaprianDB.clearSesion();
         window.location.href = 'index.html';
       }
     }
@@ -80,11 +75,11 @@
 
     const lista = document.getElementById('listaCapsulas');
 
-    // Cargar cápsulas guardadas al iniciar
-    function cargarCapsulas() {
+    // Cargar cápsulas desde Supabase
+    async function cargarCapsulas() {
       try {
-        const capsulasGuardadas = JSON.parse(localStorage.getItem('capsulas') || '[]');
-        const carpetas = JSON.parse(localStorage.getItem('carpetas') || '[]');
+        const capsulasGuardadas = await CecaprianDB.getCapsulas();
+        const carpetas = await CecaprianDB.getCarpetas();
         
         lista.innerHTML = '';
 
@@ -93,14 +88,12 @@
           return;
         }
 
-        // Agrupar cápsulas por carpeta
         const capsulasPorCarpeta = {};
 
         carpetas.forEach(carpeta => {
           capsulasPorCarpeta[carpeta.id] = { carpeta, capsulas: [] };
         });
 
-        // Cápsulas sin carpeta asignada
         capsulasPorCarpeta['sin-carpeta'] = { carpeta: { id: 'sin-carpeta', nombre: 'Sin categoría' }, capsulas: [] };
 
         capsulasGuardadas.forEach(capsula => {
@@ -119,20 +112,19 @@
           }
         });
 
-        // Mostrar carpetas con sus cápsulas
         carpetas.forEach(carpeta => {
           if (capsulasPorCarpeta[carpeta.id] && capsulasPorCarpeta[carpeta.id].capsulas.length > 0) {
             mostrarCarpetaConCapsulas(carpeta, capsulasPorCarpeta[carpeta.id].capsulas);
           }
         });
 
-        // Mostrar cápsulas sin carpeta si las hay
         if (capsulasPorCarpeta['sin-carpeta'].capsulas.length > 0) {
           mostrarCarpetaConCapsulas(capsulasPorCarpeta['sin-carpeta'].carpeta, capsulasPorCarpeta['sin-carpeta'].capsulas);
         }
 
       } catch (error) {
         console.error('Error al cargar cápsulas:', error);
+        lista.innerHTML = '<p style="text-align: center; color: #c0392b;">No se pudieron cargar las cápsulas.</p>';
       }
     }
 

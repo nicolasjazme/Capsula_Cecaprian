@@ -53,6 +53,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/cecaprian-db.js"></script>
   <script>
     const form = document.getElementById('loginForm');
     const errorMessage = document.getElementById('errorMessage');
@@ -60,11 +62,9 @@
     const usernameGroup = document.getElementById('usernameGroup');
     const usernameInput = document.getElementById('username');
 
-    // Contraseña del administrador (fija)
     const adminPassword = 'admin123';
 
-    // Mostrar/ocultar campo de nombre de usuario
-    tipoUsuarioSelect.addEventListener('change', function() {
+    tipoUsuarioSelect.addEventListener('change', function () {
       if (this.value === 'usuario') {
         usernameGroup.style.display = 'block';
         usernameInput.required = true;
@@ -75,117 +75,75 @@
       }
     });
 
-    form.addEventListener('submit', function(e) {
+    function mostrarError(mensaje) {
+      errorMessage.textContent = mensaje;
+      errorMessage.style.display = 'block';
+      setTimeout(function () {
+        errorMessage.style.display = 'none';
+      }, 5000);
+    }
+
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
 
       const tipoUsuario = tipoUsuarioSelect.value;
       const username = usernameInput.value.trim();
       const password = document.getElementById('password').value;
 
-      // Validar campos
       if (!tipoUsuario || !password) {
         mostrarError('Por favor completa todos los campos');
         return;
       }
 
       if (tipoUsuario === 'admin') {
-        // Validar admin
         if (password === adminPassword) {
-          const sesion = {
+          CecaprianDB.setSesion({
             tipo: 'admin',
             fecha: new Date().toISOString()
-          };
-          localStorage.setItem('sesion', JSON.stringify(sesion));
+          });
           window.location.href = 'cecaprian-admin.html';
         } else {
           mostrarError('Contraseña de administrador incorrecta.');
         }
-      } else if (tipoUsuario === 'usuario') {
-        // Validar usuario creado
+        return;
+      }
+
+      if (tipoUsuario === 'usuario') {
         if (!username) {
           mostrarError('Por favor ingresa tu nombre de usuario');
           return;
         }
 
-        const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-        const usuario = usuarios.find(u => u.username === username && u.password === password);
-
-        if (usuario) {
-          const sesion = {
+        try {
+          const usuario = await CecaprianDB.loginUsuario(username, password);
+          if (!usuario) {
+            mostrarError('Nombre de usuario o contraseña incorrectos.');
+            return;
+          }
+          CecaprianDB.setSesion({
             tipo: 'usuario',
             username: username,
             fecha: new Date().toISOString()
-          };
-          localStorage.setItem('sesion', JSON.stringify(sesion));
+          });
           window.location.href = 'CECAPRIAN.html';
-        } else {
-          mostrarError('Nombre de usuario o contraseña incorrectos.');
+        } catch (err) {
+          console.error(err);
+          mostrarError('No se pudo verificar el usuario. Revisa la conexión o vuelve a intentar.');
         }
       }
     });
 
-    function mostrarError(mensaje) {
-      errorMessage.textContent = mensaje;
-      errorMessage.style.display = 'block';
-      setTimeout(() => {
-        errorMessage.style.display = 'none';
-      }, 5000);
-    }
-
-    // Verificar si ya hay una sesión activa
-    const sesionGuardada = localStorage.getItem('sesion');
-    if (sesionGuardada) {
+    (function redirigirSiHaySesion() {
+      const sesion = CecaprianDB.getSesion();
+      if (!sesion) return;
       try {
-        const sesion = JSON.parse(sesionGuardada);
-        // Redirigir automáticamente si hay sesión
         if (sesion.tipo === 'admin') {
           window.location.href = 'cecaprian-admin.html';
         } else {
           window.location.href = 'CECAPRIAN.html';
         }
-      } catch (e) {
-        // Si hay error, continuar con el login
-      }
-    }
+      } catch (e) {}
+    })();
   </script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-    // 2. Configuración de Supabase
-    const SUPABASE_URL = 'https://ovzogjfodcbhhpaduhsx.supabase.co';
-    const SUPABASE_KEY = 'sb_secret_DHNv70vsC2DfnPn64Ek-Xg_2WRke2ym'; // Asegúrate de poner tu llave real
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const loginForm = document.getElementById('loginForm');
-
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const userInput = document.getElementById('username').value;
-        const passInput = document.getElementById('password').value;
-
-        // 3. Consultar en la tabla 'usuarios' de Supabase
-        const { data: usuarios, error } = await _supabase
-            .from('usuarios')
-            .select('*')
-            .eq('nombre', userInput)
-            .eq('password', passInput) // Nota: En producción se recomienda usar Auth de Supabase, no texto plano
-            .single();
-
-        if (error || !usuarios) {
-            alert('Usuario o contraseña incorrectos');
-            console.error('Error de login:', error);
-        } else {
-            // 4. Guardar sesión temporal (opcional, para saber quién entró)
-            localStorage.setItem('usuarioLogueado', JSON.stringify(usuarios));
-            
-            // Redirección según el tipo de usuario o a la página general
-            // Si tienes una columna "rol" en tu tabla, podrías usarla aquí
-            alert('¡Bienvenido ' + usuarios.nombre + '!');
-            window.location.href = 'capsulas-alumno.html'; 
-        }
-    });
-</script> 
 </body>
 </html>

@@ -62,33 +62,27 @@
     <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian· Inspirado en <a href="https://www.cecaprian.com" target="_blank" style="color:#fff; text-decoration:underline;">cecaprian.com</a></span>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/cecaprian-db.js"></script>
   <script>
     // Verificar sesión de usuario
     function verificarSesion() {
-      const sesionGuardada = localStorage.getItem('sesion');
-      if (!sesionGuardada) {
+      const sesion = CecaprianDB.getSesion();
+      if (!sesion) {
         window.location.href = 'index.html';
         return false;
       }
-      
-      try {
-        const sesion = JSON.parse(sesionGuardada);
-        if (sesion.tipo === 'admin') {
-          // Si es admin, redirigir al panel administrativo
-          window.location.href = 'cecaprian-admin.html';
-          return false;
-        }
-        return true;
-      } catch (e) {
-        window.location.href = 'index.html';
+      if (sesion.tipo === 'admin') {
+        window.location.href = 'cecaprian-admin.html';
         return false;
       }
+      return true;
     }
 
     // Cerrar sesión
     function cerrarSesion() {
       if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        localStorage.removeItem('sesion');
+        CecaprianDB.clearSesion();
         window.location.href = 'index.html';
       }
     }
@@ -102,10 +96,19 @@
     const listaEvaluaciones = document.getElementById('listaEvaluaciones');
     const listaDocumentos = document.getElementById('listaDocumentos');
 
-    function cargarEvaluacionesDisponibles() {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
-      const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+    async function cargarEvaluacionesDisponibles() {
+      let evaluaciones;
+      let respuestasEvaluaciones;
+      try {
+        evaluaciones = await CecaprianDB.getEvaluaciones();
+        respuestasEvaluaciones = await CecaprianDB.getRespuestasEvaluaciones();
+      } catch (e) {
+        console.error(e);
+        listaEvaluaciones.innerHTML = '<p style="color:#c0392b;">No se pudieron cargar las evaluaciones.</p>';
+        return;
+      }
+      const sesion = CecaprianDB.getSesion() || {};
+      const username = sesion.username;
       
       listaEvaluaciones.innerHTML = '';
 
@@ -126,7 +129,7 @@
       let totalPreguntas = 0;
 
       evaluaciones.forEach((eval) => {
-        const intentosEval = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.usuario && r.evaluacionId === eval.id);
+        const intentosEval = respuestasEvaluaciones.filter(r => r.usuarioId === username && r.evaluacionId === eval.id);
         if (intentosEval.length > 0) {
           evaluacionesCompletadas++;
           intentosEval.forEach(intento => {
@@ -180,7 +183,7 @@
       const tbody = document.createElement('tbody');
       evaluaciones.forEach((eval, index) => {
         const tr = document.createElement('tr');
-        const intentosEval = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.usuario && r.evaluacionId === eval.id);
+        const intentosEval = respuestasEvaluaciones.filter(r => r.usuarioId === username && r.evaluacionId === eval.id);
         const intentosRestantes = Math.max(0, 3 - intentosEval.length);
         const mejorCalificacion = intentosEval.length > 0 ? Math.max(...intentosEval.map(i => i.porcentaje)) : 'N/A';
         const puedeResponder = intentosRestantes > 0;
@@ -226,14 +229,14 @@
       listaEvaluaciones.appendChild(tabla);
     }
 
-    function iniciarEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function iniciarEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
-      const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+      const sesion = CecaprianDB.getSesion() || {};
+      const username = sesion.username;
       
-      // Contar intentos
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
-      const intentosUsuario = respuestasEvaluaciones.filter(r => r.usuarioId === sesion.usuario && r.evaluacionId === eval.id);
+      const respuestasEvaluaciones = await CecaprianDB.getRespuestasEvaluaciones();
+      const intentosUsuario = respuestasEvaluaciones.filter(r => r.usuarioId === username && r.evaluacionId === eval.id);
       
       if (intentosUsuario.length >= 3) {
         alert('Has alcanzado el máximo de 3 intentos en esta evaluación.');
@@ -288,29 +291,31 @@
       document.body.appendChild(modal);
     }
 
-    function enviarEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function enviarEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
-      const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+      const sesion = CecaprianDB.getSesion() || {};
+      const username = sesion.username;
 
-      let aciertos = 0;
       let total = eval.preguntas.length;
-
-      // Verificar respuestas
-      eval.preguntas.forEach((preg, idx) => {
+      for (let idx = 0; idx < total; idx++) {
         const respuestaSeleccionada = document.querySelector(`input[name="respuesta-${idx}"]:checked`);
         if (!respuestaSeleccionada) {
           alert('Por favor responde todas las preguntas');
           return;
         }
+      }
+
+      let aciertos = 0;
+      eval.preguntas.forEach((preg, idx) => {
+        const respuestaSeleccionada = document.querySelector(`input[name="respuesta-${idx}"]:checked`);
         if (respuestaSeleccionada.value === preg.respuestaCorrecta) {
           aciertos++;
         }
       });
 
-      // Guardar respuestas
       const respuesta = {
-        usuarioId: sesion.usuario,
+        usuarioId: username,
         evaluacionId: eval.id,
         aciertos: aciertos,
         total: total,
@@ -318,25 +323,32 @@
         fecha: new Date().toISOString()
       };
 
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
-      respuestasEvaluaciones.push(respuesta);
-      localStorage.setItem('respuestasEvaluaciones', JSON.stringify(respuestasEvaluaciones));
-
-      document.getElementById('modal-evaluacion').remove();
-      
-      const aprobado = respuesta.porcentaje >= 80;
-      const mensaje = aprobado ? 
-        `¡Excelente! Obtuviste ${aciertos}/${total} (${respuesta.porcentaje}%). ¡Aprobado!` :
-        `Obtuviste ${aciertos}/${total} (${respuesta.porcentaje}%). Necesitas 80% para aprobar.`;
-      
-      alert(mensaje);
-      cargarEvaluacionesDisponibles();
+      try {
+        await CecaprianDB.insertRespuestaEvaluacion(respuesta);
+        document.getElementById('modal-evaluacion').remove();
+        const aprobado = respuesta.porcentaje >= 80;
+        const mensaje = aprobado ? 
+          `¡Excelente! Obtuviste ${aciertos}/${total} (${respuesta.porcentaje}%). ¡Aprobado!` :
+          `Obtuviste ${aciertos}/${total} (${respuesta.porcentaje}%). Necesitas 80% para aprobar.`;
+        alert(mensaje);
+        await cargarEvaluacionesDisponibles();
+      } catch (err) {
+        console.error(err);
+        alert('Error al guardar el resultado: ' + err.message);
+      }
     }
 
     // ========== MOSTRAR DOCUMENTOS DISPONIBLES ==========
 
-    function cargarDocumentosDisponibles() {
-      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+    async function cargarDocumentosDisponibles() {
+      let documentos;
+      try {
+        documentos = await CecaprianDB.getDocumentos();
+      } catch (e) {
+        console.error(e);
+        listaDocumentos.innerHTML = '<p style="color:#c0392b;">No se pudieron cargar los documentos.</p>';
+        return;
+      }
       listaDocumentos.innerHTML = '';
 
       if (documentos.length === 0) {
@@ -375,7 +387,7 @@
           </td>
           <td>${doc.tamanio}</td>
           <td style="text-align: center;">
-            <button class="btn-accion btn-descargar" onclick="descargarDocumento(${index})" title="Descargar">
+            <button class="btn-accion btn-descargar" onclick="descargarDocumento('${doc.id}')" title="Descargar">
               <i class="fas fa-download"></i> Descargar
             </button>
           </td>
@@ -387,10 +399,9 @@
       listaDocumentos.appendChild(tabla);
     }
 
-    function descargarDocumento(index) {
-      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
-      const doc = documentos[index];
-
+    async function descargarDocumento(docId) {
+      const documentos = await CecaprianDB.getDocumentos();
+      const doc = documentos.find(d => d.id === docId);
       if (!doc) return;
 
       try {

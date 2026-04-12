@@ -674,42 +674,31 @@
     <span>&copy; 2026 Centro de Capacitación Bancaria Cecaprian· Inspirado en <a href="https://www.cecaprian.com" target="_blank" style="color:#fff; text-decoration:underline;">cecaprian.com</a></span>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/cecaprian-db.js"></script>
   <script>
     // Verificar sesión (usuario o admin pueden ver)
     function verificarSesion() {
-      const sesionGuardada = localStorage.getItem('sesion');
-      if (!sesionGuardada) {
+      const sesion = CecaprianDB.getSesion();
+      if (!sesion) {
         window.location.href = 'index.html';
         return false;
       }
-      
-      try {
-        const sesion = JSON.parse(sesionGuardada);
-        if (sesion.tipo !== 'usuario' && sesion.tipo !== 'admin') {
-          window.location.href = 'index.html';
-          return false;
-        }
-        return true;
-      } catch (e) {
+      if (sesion.tipo !== 'usuario' && sesion.tipo !== 'admin') {
         window.location.href = 'index.html';
         return false;
       }
+      return true;
     }
 
     // Verificar y redirigir según tipo de usuario
     function verificarYRedirigir() {
-      const sesionGuardada = localStorage.getItem('sesion');
-      if (sesionGuardada) {
-        try {
-          const sesion = JSON.parse(sesionGuardada);
-          if (sesion.tipo === 'admin') {
-            window.location.href = 'CECAPRIAN.html';
-          } else {
-            // Usuario permanece en esta página
-            return false;
-          }
-        } catch (e) {
-          window.location.href = 'index.html';
+      const sesion = CecaprianDB.getSesion();
+      if (sesion) {
+        if (sesion.tipo === 'admin') {
+          window.location.href = 'CECAPRIAN.html';
+        } else {
+          return false;
         }
       } else {
         window.location.href = 'index.html';
@@ -719,7 +708,7 @@
     // Cerrar sesión
     function cerrarSesion() {
       if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        localStorage.removeItem('sesion');
+        CecaprianDB.clearSesion();
         window.location.href = 'index.html';
       }
     }
@@ -892,14 +881,8 @@
       const capsulaId = capsula.id || capsula.fecha || Date.now().toString();
       
       // Verificar si es administrador para mostrar botón de eliminar
-      const sesionGuardada = localStorage.getItem('sesion');
-      let esAdmin = false;
-      if (sesionGuardada) {
-        try {
-          const sesion = JSON.parse(sesionGuardada);
-          esAdmin = sesion.tipo === 'admin';
-        } catch (e) {}
-      }
+      const sesion = CecaprianDB.getSesion();
+      const esAdmin = sesion && sesion.tipo === 'admin';
       
       const div = document.createElement('div');
       div.className = 'capsula';
@@ -956,20 +939,13 @@
     }
 
     // Eliminar cápsula
-    function eliminarCapsula(capsulaId) {
+    async function eliminarCapsula(capsulaId) {
       if (!confirm('¿Estás seguro de que quieres eliminar esta cápsula?')) {
         return;
       }
       
       try {
-        const capsulas = JSON.parse(localStorage.getItem('capsulas') || '[]');
-        const capsulasFiltradas = capsulas.filter(c => {
-          const id = c.id || c.fecha;
-          return id !== capsulaId;
-        });
-        localStorage.setItem('capsulas', JSON.stringify(capsulasFiltradas));
-        
-        // Eliminar el elemento del DOM
+        await CecaprianDB.deleteCapsula(capsulaId);
         const elemento = document.querySelector(`[data-capsula-id="${capsulaId}"]`);
         if (elemento) {
           elemento.style.transition = 'opacity 0.3s, transform 0.3s';
@@ -977,7 +953,6 @@
           elemento.style.transform = 'scale(0.9)';
           setTimeout(() => {
             elemento.remove();
-            // Si no hay más cápsulas, mostrar mensaje
             if (lista.children.length === 0) {
               mensajeVacio.style.display = 'block';
             }
@@ -990,10 +965,18 @@
     }
 
     // Cargar y mostrar evaluaciones
-    function cargarEvaluaciones() {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
-      const sesion = JSON.parse(localStorage.getItem('sesion'));
+    async function cargarEvaluaciones() {
+      let evaluaciones;
+      let respuestasEvaluaciones;
+      try {
+        evaluaciones = await CecaprianDB.getEvaluaciones();
+        respuestasEvaluaciones = await CecaprianDB.getRespuestasEvaluaciones();
+      } catch (e) {
+        console.error(e);
+        listaEvaluaciones.innerHTML = '<p style="color:#c0392b;">Error al cargar evaluaciones.</p>';
+        return;
+      }
+      const sesion = CecaprianDB.getSesion();
       listaEvaluaciones.innerHTML = '';
 
       if (evaluaciones.length === 0) {
@@ -1070,7 +1053,7 @@
 
         div.innerHTML = `
           <h3 class="evaluacion-titulo">${eval.titulo}</h3>
-          <p class="evaluacion-desc">${eval.descripcion}</p>
+          <p class="evaluacion-desc">${eval.descripcion || ''}</p>
           <span class="evaluacion-preguntas">
             <i class="fas fa-question-circle"></i> ${eval.preguntas.length} preguntas
           </span>
@@ -1084,11 +1067,19 @@
     }
 
     // Cargar sección de inicio
-    function cargarSeccionInicio() {
-      const sesion = JSON.parse(localStorage.getItem('sesion'));
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
-      const respuestasEvaluaciones = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
-      const documentos = JSON.parse(localStorage.getItem('documentos') || '[]');
+    async function cargarSeccionInicio() {
+      const sesion = CecaprianDB.getSesion();
+      let evaluaciones;
+      let respuestasEvaluaciones;
+      let documentos;
+      try {
+        evaluaciones = await CecaprianDB.getEvaluaciones();
+        respuestasEvaluaciones = await CecaprianDB.getRespuestasEvaluaciones();
+        documentos = await CecaprianDB.getDocumentos();
+      } catch (e) {
+        console.error(e);
+        return;
+      }
       
       // Obtener evaluaciones pendientes (sin respuestas o que no han agotado intentos)
       const evaluacionesPendientes = [];
@@ -1176,7 +1167,7 @@
 
       // Cargar la barra de progreso en la sección de inicio
       if (evaluaciones.length > 0) {
-        const respuestasGuardadas = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
+        const respuestasGuardadas = respuestasEvaluaciones;
         let aprobadas = 0;
         let desaprobadas = 0;
 
@@ -1234,8 +1225,8 @@
 
     // Cargar barra de progreso
     // Abrir modal para responder evaluación
-    function abrirEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function abrirEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
 
       if (!eval) return;
@@ -1282,14 +1273,13 @@
     }
 
     // Enviar evaluación
-    function enviarEvaluacion(index) {
-      const evaluaciones = JSON.parse(localStorage.getItem('evaluaciones') || '[]');
+    async function enviarEvaluacion(index) {
+      const evaluaciones = await CecaprianDB.getEvaluaciones();
       const eval = evaluaciones[index];
       const respuestas = [];
       let aciertos = 0;
 
       try {
-        // Recopilar respuestas
         eval.preguntas.forEach((preg, pregIndex) => {
           const radioSeleccionado = document.querySelector(`input[name="preg${pregIndex}"]:checked`);
           if (!radioSeleccionado) {
@@ -1307,14 +1297,11 @@
           });
         });
 
-        // Calcular porcentaje
         const porcentaje = Math.round((aciertos / eval.preguntas.length) * 100);
         const aprobado = porcentaje >= 80;
 
-        // Guardar respuesta
-        const sesion = JSON.parse(localStorage.getItem('sesion'));
-        const respuestasGuardadas = JSON.parse(localStorage.getItem('respuestasEvaluaciones') || '[]');
-        respuestasGuardadas.push({
+        const sesion = CecaprianDB.getSesion();
+        await CecaprianDB.insertRespuestaEvaluacion({
           usuarioId: sesion.username,
           evaluacionId: eval.id,
           evaluacionTitulo: eval.titulo,
@@ -1326,7 +1313,6 @@
           fecha: new Date().toISOString()
         });
 
-        localStorage.setItem('respuestasEvaluaciones', JSON.stringify(respuestasGuardadas));
         document.getElementById('modal-evaluacion').remove();
         
         let mensaje = `¡Evaluación completada!\n\nResultado: ${aciertos}/${eval.preguntas.length} respuestas correctas (${porcentaje}%)`;
@@ -1337,21 +1323,21 @@
         }
         
         alert(mensaje);
-        cargarEvaluaciones();
-        cargarSeccionInicio();
+        await cargarEvaluaciones();
+        await cargarSeccionInicio();
       } catch (error) {
         if (error.message !== 'Pregunta no respondida') {
           console.error('Error al enviar evaluación:', error);
-          alert('Error al procesar la evaluación');
+          alert('Error al procesar la evaluación: ' + (error.message || ''));
         }
       }
     }
 
     // Cargar y mostrar todas las evaluaciones guardadas
-    function cargarYMostrarEvaluaciones() {
+    async function cargarYMostrarEvaluaciones() {
       try {
-        cargarSeccionInicio();
-        cargarEvaluaciones();
+        await cargarSeccionInicio();
+        await cargarEvaluaciones();
       } catch (error) {
         console.error('Error al cargar evaluaciones:', error);
       }
@@ -1361,9 +1347,9 @@
     cargarYMostrarEvaluaciones();
 
     // Cargar y mostrar todas las cápsulas guardadas
-    function cargarCapsulas() {
+    async function cargarCapsulas() {
       try {
-        const capsulasGuardadas = JSON.parse(localStorage.getItem('capsulas') || '[]');
+        const capsulasGuardadas = await CecaprianDB.getCapsulas();
         
         // Filtrar cápsulas válidas (compatibilidad con formato antiguo y nuevo)
         const capsulasValidas = capsulasGuardadas.filter(c => {
